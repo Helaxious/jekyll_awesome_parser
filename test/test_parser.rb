@@ -112,8 +112,21 @@ class TestParser < Minitest::Test
     end
   end
 
+  def test_init_variables()
+    method_args,input = [["*arg1", "arg2=None", "arg3"], "potato"]
+    test_parser = JekyllAwesomeParser.new
+    test_parser.init_variables(method_args, input)
+
+    clean_lookup = test_parser.instance_variable_get(:@clean_lookup)
+    dirty_lookup = test_parser.instance_variable_get(:@dirty_lookup)
+    parsed_result = test_parser.instance_variable_get(:@parsed_result)
+
+    assert_equal(clean_lookup, {"arg1" => "*arg1", "arg2" => "arg2=None", "arg3" => "arg3"})
+    assert_equal(dirty_lookup, {"*arg1" => "arg1", "arg2=None" => "arg2", "arg3" => "arg3"})
+    assert_equal(parsed_result, {"*arg1" => [], "arg2=None" => [], "arg3" => []})
+  end
+
   def test_basic_positional_arguments_and_star_args()
-    skip "I don't even converted the parser yet lol"
     tests = [
       {"args" => ["arg1"], "input" => "\"jokes\"",
       "result" => {"arg1" => ["jokes"]}, "exception" => nil},
@@ -128,8 +141,26 @@ class TestParser < Minitest::Test
       "result" => {"arg1" => ["jokes"], "arg2" => ["fun_facts"]}, "exception" => nil},
 
       {"args" => ["arg1", "*arg2"], "input" => "\"jokes\" \"fun_facts\" \"games\"",
-      "result" => {"arg1" => ["jokes"], "arg2" => ["fun_facts", "games"]}, "exception" => nil}]
+      "result" => {"arg1" => ["jokes"], "arg2" => ["fun_facts", "games"]}, "exception" => nil}
+      ]
     _test(tests, "test_basic_positional_arguments_and_star_args")
+  end
+
+  def test_keyword_arguments_and_star_args()
+    tests = [
+      {"args" => ["arg1"], "input" => "arg1: \"jokes\"",
+      "result" => {"arg1" => ["jokes"]}, "exception" => nil},
+
+      {"args" => ["*arg1", "arg2"], "input" => "arg1: \"jokes\" \"fun_facts\" \"games\" arg2: \"web_dev\"",
+      "result" => {"arg1" => ["jokes", "fun_facts", "games"], "arg2" => ["web_dev"]}, "exception" => nil},
+
+      {"args" => ["arg1", "arg2"], "input" => "arg2: \"jokes\" arg1: \"fun_facts\"",
+      "result" => {"arg1" => ["fun_facts"], "arg2" => ["jokes"]}, "exception" => nil},
+
+      {"args" => ["*arg1", "*arg2"], "input" => "arg2: \"jokes\" \"games\" arg1: \"fun_facts\" \"web_dev\"",
+      "result" => {"arg1" => ["fun_facts", "web_dev"], "arg2" => ["jokes", "games"]}, "exception" => nil}
+      ]
+    _test(tests, "test_keyword_arguments_and_star_args")
   end
 
 end

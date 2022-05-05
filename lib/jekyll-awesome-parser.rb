@@ -104,6 +104,202 @@ class JekyllAwesomeParser
     end
   end
 
-  def parse_arguments(args, input)
+  def init_variables(method_args, user_input)
+    @user_input = user_input
+    @method_args = method_args
+
+    clean_args = clean_args(@method_args.map{|key|[key, []]}.to_h).keys()
+    @clean_lookup = clean_args.zip(@method_args).map{|clean, dirty|[clean, dirty]}.to_h
+    @dirty_lookup = clean_args.zip(@method_args).map{|clean, dirty|[dirty, clean]}.to_h
+
+    @tmp_string = ""
+    @flags = {"matching" => nil, "quote" => nil}
+    @current_arg = @method_args[0]
+    @arg_pointer = 0
+    @parsed_result = @method_args.map{|key|[key, []]}.to_h
+  end
+
+  def raise_parser_error(*args)
+  end
+
+  def validate_keyword(letter, pointer, keyword)
+    if peek_until_not(@user_input, pointer, "right", target=[" "])[1] == "no_match"
+      raise_parser_error(pointer, "EmptyKeyword")
+    end
+    if !@clean_lookup.include?(keyword)
+      raise_parser_error(pointer, "UnexpectedKeyword")
+    end
+    dirty_keyword = @clean_lookup[keyword]
+    if @parsed_result.include?(dirty_keyword) && @parsed_result[dirty_keyword]
+      raise_parser_error(pointer, "RepeatedKeyword")
+    else
+      if !@parsed_result.include?(dirty_keyword)
+        raise_parser_error(pointer, "UnexpectedKeyword")
+      end
+    end
+  end
+
+  def close_argument()
+    @flags["matching"], @flags["quote"] = [nil, nil]
+    if @clean_lookup.include?(@current_arg)
+      @current_arg = @clean_lookup[@current_arg]
+    end
+    @tmp_string = @tmp_string.strip
+    @parsed_result[@current_arg] = @parsed_result[@current_arg] + [@tmp_string]
+    @tmp_string = ""
+  end
+
+  def check_remaining_quoteless_args(pointer, user_input=nil)
+    user_input = user_input || @user_input
+    peek_pointer = pointer
+
+    return false if peek_until_not(user_input, peek_pointer, "right", [" ", ","])[0] == false
+
+    while true
+      peek_after_result = peek_after(user_input, peek_pointer, "right", target=[" ", ","], target_after="", stop=["\\", "\"", "'"])
+      peek_result = peek(user_input, peek_pointer, "right", target="", stop=["\\", "\"", "'"])
+
+      # Checking if the match is zero length
+      return false if peek_after_result[2] == peek_pointer && peek_result[2] == peek_pointer
+
+      if !["stop", "end_of_string"].include?(peek_after_result[1]) || !["stop", "end_of_string"].include?(peek_result[1])
+        check_colon = peek_until(user_input, peek_pointer, "right", ":", stop=[" ", ","])
+        if ["stop", "end_of_string"].include?(check_colon[1])
+          return false if check_colon[2] == peek_pointer
+          return true
+        end
+        if check_colon[1] == "match"
+          peek_pointer = check_colon[2]
+        end
+      else
+        return false
+      end
+
+    end
+  end
+
+  def check_next_quoteless_arg(pointer)
+    peek_result = peek(@user_input, pointer, "right", "", stop=["\\", " ", ","])
+    peek_after_result = peek_after(@user_input, pointer, "right", target=[" ", ","], target_after="", stop=["\\", "\"", "'"])
+    if !["stop", "end_of_string"].include?(peek_after_result[1]) || !["stop", "end_of_string"].include?(peek_result[1])
+      check_colon = peek_until(@user_input, pointer, "right", ":", stop=[" ", ","])
+      if ["stop", "end_of_string"].include?(check_colon[1])
+        return true
+      end
+    end
+    return false
+  end
+
+  def bump_current_arg(pointer, letter)
+    check_remaining_quote_args = lambda do
+      return peek_until(@user_input, pointer, "right", ["\"", "'"])[1] == "match"
+    end
+    check_next_quote_args = lambda do
+      return peek_after(@user_input, pointer, "right", [" ", ","], ['"',"'"])[0] || peek(@user_input, pointer, "right", ["\"", "'"])[0]
+    end
+
+    if @current_arg[0] != "*"
+      if check_remaining_quoteless_args(pointer) || check_remaining_quote_args.call()
+        if @arg_pointer == @method_args.size - 1
+          raise_parser_error(pointer, "TooMuchArguments")
+        end
+        if check_next_quoteless_arg(pointer) || check_next_quote_args.call()
+          @arg_pointer += 1
+          @current_arg = @method_args[@arg_pointer]
+        end
+        return
+      end
+      if @arg_pointer != @method_args.size - 1
+        raise_parser_error(pointer, "NotEnoughArguments")
+      end
+    end
+    if @arg_pointer == @method_args.size - 1
+      return
+    end
+    if peek_until_not(@user_input, pointer, "right", " ")[0] == true
+      return
+    end
+    next_method_argument = @method_args[@method_args.index(@current_arg) + 1]
+    if (@current_arg[0] == "*") && !next_method_argument.include?("=")
+      raise_parser_error(pointer, "MissingKeywordArgument")
+    end
+  end
+
+  def check_quoted_strings(pointer, letter)
+    return if peek(@user_input, pointer, "left", "\\")[0] == true
+
+    if @flags["matching"] == "argument"
+      close_argument()
+      bump_current_arg(pointer, letter)
+      return
+    end
+    if @flags["matching"] != "argument"
+      @tmp_string = ""
+      @flags["matching"],@flags["quote"] = ["argument", letter]
+      if peek_until(@user_input, pointer, "right", ["'", "\""])[1] != "match"
+        # raise_parser_error(pointer, "StringNotClosed")
+      end
+    end
+  end
+
+  def parse_arguments(methods_args, input)
+    validate_developer_arguments(methods_args)
+    init_variables(methods_args, input)
+
+    for letter, pointer in @user_input.split("").each_with_index
+      if ['"', "'"].include?(letter)
+        check_quoted_strings(pointer, letter)
+        next # Don't run the code below, and go to the next iteration
+      end
+
+      if @flags["matching"] == "argument"
+        # check_quoteless_strings(pointer, letter)
+        @tmp_string += letter
+        next
+      end
+
+      # Checking for a stray colon
+      if letter == ":"
+        if @flags["matching"] == nil
+          # raise_parser_error(pointer, "InvalidKeyword")
+        end
+      end
+
+      if @flags["matching"] == nil && ![" ", ","].include?(letter)
+        # raise_parser_error(pointer, "InvalidCharacter") if letter == "\\"
+
+        @tmp_string = ""
+        if peek_until(@user_input, pointer, "right", target=[":"], stop=[" ", ","])[0] == false
+          @flags["matching"],@flags["quote"] = ["argument", false]
+          @tmp_string += letter
+        else
+          @flags["matching"] = "keyword"
+          @tmp_string += letter
+        end
+
+      else
+        if @flags["matching"] == "keyword" && letter != ":"
+          # raise_parser_error(pointer, "InvalidKeyword") if ["\\"].include?(letter)
+          @tmp_string += letter
+        else
+          if @flags["matching"] == "keyword" && letter == ":"
+            keyword = @tmp_string.strip
+            validate_keyword(letter, pointer, keyword)
+            if peek_until(@user_input, pointer, "left", target=["\"", "'"])[1] == "match" || check_remaining_quoteless_args(0, @user_input[0...pointer] + ":")
+              @arg_pointer += 1
+            end
+
+            if @dirty_lookup.include?(@current_arg)
+              @current_arg = @dirty_lookup[@current_arg]
+            end
+
+            @flags["matching"] = nil
+            @current_arg = keyword
+            @tmp_string = ""
+          end
+        end
+      end
+    end
+    return clean_args(@parsed_result)
   end
 end
