@@ -242,6 +242,23 @@ class JekyllAwesomeParser
     end
   end
 
+  def check_quoteless_strings(pointer, letter)
+    if @flags["quote"] == false
+      raise_parser_error(pointer, "InvalidCharacter") if letter == "\\"
+
+      next_character_is_quote = peek(@user_input, pointer, "right", ["\"", "'"])
+      if pointer == @user_input.length - 1
+        @tmp_string += letter
+      end
+      if [" ", ","].include?(letter) || (pointer == @user_input.size - 1) || next_character_is_quote[0]
+        # Manually removing all commas, ok, it's hacky I know
+        @tmp_string = @tmp_string.gsub(",", "")
+        close_argument()
+        bump_current_arg(pointer, letter)
+      end
+    end
+  end
+
   def parse_arguments(methods_args, input)
     validate_developer_arguments(methods_args)
     init_variables(methods_args, input)
@@ -253,7 +270,7 @@ class JekyllAwesomeParser
       end
 
       if @flags["matching"] == "argument"
-        # check_quoteless_strings(pointer, letter)
+        check_quoteless_strings(pointer, letter)
         @tmp_string += letter
         next
       end
