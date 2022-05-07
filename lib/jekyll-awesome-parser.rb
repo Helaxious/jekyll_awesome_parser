@@ -1,3 +1,5 @@
+require_relative "parser_errors.rb"
+
 class JekyllAwesomeParser
 
   def peek(string, pointer, direction, target, stop=nil)
@@ -96,6 +98,14 @@ class JekyllAwesomeParser
     return arguments.map{|key|[key, result[key]]}.to_h
   end
 
+  def raise_parser_error(pointer, error, *args, extra_info)
+    # You can't have an optional argument after a splat?????? why??????
+    raise TypeError, "'extra_info' needs to be a Array" unless [Array, NilClass].include? extra_info.class
+
+    error = ParserErrors.const_get(error)
+    raise error.new({"user_input":@user_input, "pointer":pointer}, *args, extra_info=extra_info)
+  end
+
   def validate_developer_arguments(args)
     error_note = "(This is a developer error, this error should be fixed by the\n" +
                 "developers and not the user, if you're the user, contact the developers!)"
@@ -119,22 +129,19 @@ class JekyllAwesomeParser
     @parsed_result = @method_args.map{|key|[key, []]}.to_h
   end
 
-  def raise_parser_error(*args)
-  end
-
   def validate_keyword(letter, pointer, keyword)
     if peek_until_not(@user_input, pointer, "right", target=[" "])[1] == "no_match"
-      raise_parser_error(pointer, "EmptyKeyword")
+      raise_parser_error(pointer, "EmptyKeywordError", extra_info=nil)
     end
     if !@clean_lookup.include?(keyword)
-      raise_parser_error(pointer, "UnexpectedKeyword")
+      raise_parser_error(pointer, "UnexpectedKeywordError", extra_info=nil)
     end
     dirty_keyword = @clean_lookup[keyword]
     if @parsed_result.include?(dirty_keyword) && @parsed_result[dirty_keyword]
-      raise_parser_error(pointer, "RepeatedKeyword")
+      raise_parser_error(pointer, "RepeatedKeywordError", extra_info=nil)
     else
       if !@parsed_result.include?(dirty_keyword)
-        raise_parser_error(pointer, "UnexpectedKeyword")
+        raise_parser_error(pointer, "UnexpectedKeywordError", extra_info=nil)
       end
     end
   end
@@ -201,7 +208,7 @@ class JekyllAwesomeParser
     if @current_arg[0] != "*"
       if check_remaining_quoteless_args(pointer) || check_remaining_quote_args.call()
         if @arg_pointer == @method_args.size - 1
-          raise_parser_error(pointer, "TooMuchArguments")
+          raise_parser_error(pointer, "TooMuchArgumentsError", extra_info=nil)
         end
         if check_next_quoteless_arg(pointer) || check_next_quote_args.call()
           @arg_pointer += 1
@@ -210,7 +217,7 @@ class JekyllAwesomeParser
         return
       end
       if @arg_pointer != @method_args.size - 1
-        raise_parser_error(pointer, "NotEnoughArguments")
+        raise_parser_error(pointer, "NotEnoughArgumentsError", extra_info=nil)
       end
     end
     if @arg_pointer == @method_args.size - 1
@@ -221,7 +228,7 @@ class JekyllAwesomeParser
     end
     next_method_argument = @method_args[@method_args.index(@current_arg) + 1]
     if (@current_arg[0] == "*") && !next_method_argument.include?("=")
-      raise_parser_error(pointer, "MissingKeywordArgument")
+      raise_parser_error(pointer, "MissingKeywordArgumentError", extra_info=nil)
     end
   end
 
@@ -237,14 +244,14 @@ class JekyllAwesomeParser
       @tmp_string = ""
       @flags["matching"],@flags["quote"] = ["argument", letter]
       if peek_until(@user_input, pointer, "right", ["'", "\""])[1] != "match"
-        # raise_parser_error(pointer, "StringNotClosed")
+        raise_parser_error(pointer, "StringNotClosedError", extra_info=nil)
       end
     end
   end
 
   def check_quoteless_strings(pointer, letter)
     if @flags["quote"] == false
-      raise_parser_error(pointer, "InvalidCharacter") if letter == "\\"
+      raise_parser_error(pointer, "InvalidCharacterError", extra_info=nil) if letter == "\\"
 
       next_character_is_quote = peek(@user_input, pointer, "right", ["\"", "'"])
       if pointer == @user_input.length - 1
@@ -278,12 +285,12 @@ class JekyllAwesomeParser
       # Checking for a stray colon
       if letter == ":"
         if @flags["matching"] == nil
-          # raise_parser_error(pointer, "InvalidKeyword")
+          raise_parser_error(pointer, "InvalidKeywordError", extra_info=nil)
         end
       end
 
       if @flags["matching"] == nil && ![" ", ","].include?(letter)
-        # raise_parser_error(pointer, "InvalidCharacter") if letter == "\\"
+        raise_parser_error(pointer, "InvalidCharacterError", extra_info=nil) if letter == "\\"
 
         @tmp_string = ""
         if peek_until(@user_input, pointer, "right", target=[":"], stop=[" ", ","])[0] == false
@@ -296,7 +303,7 @@ class JekyllAwesomeParser
 
       else
         if @flags["matching"] == "keyword" && letter != ":"
-          # raise_parser_error(pointer, "InvalidKeyword") if ["\\"].include?(letter)
+          raise_parser_error(pointer, "InvalidKeywordError", extra_info=nil) if ["\\"].include?(letter)
           @tmp_string += letter
         else
           if @flags["matching"] == "keyword" && letter == ":"
