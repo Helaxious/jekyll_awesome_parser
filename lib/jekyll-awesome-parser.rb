@@ -137,7 +137,7 @@ class JekyllAwesomeParser
       raise_parser_error(pointer, "UnexpectedKeywordError", extra_info=nil)
     end
     dirty_keyword = @clean_lookup[keyword]
-    if @parsed_result.include?(dirty_keyword) && @parsed_result[dirty_keyword]
+    if @parsed_result.include?(dirty_keyword) && !@parsed_result[dirty_keyword].empty?
       raise_parser_error(pointer, "RepeatedKeywordError", extra_info=nil)
     else
       if !@parsed_result.include?(dirty_keyword)

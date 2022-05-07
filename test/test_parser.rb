@@ -5,12 +5,8 @@ class TestParser < Minitest::Test
   @@display_errors = false
   @@parser = JekyllAwesomeParser.new
 
-  def toggle_display_errors
-    @@display_errors = true
-  end
-
   def setup
-    @@display_errors = true
+    @@display_errors = false
   end
 
   def _test(tests, title=nil)
@@ -147,31 +143,30 @@ class TestParser < Minitest::Test
   end
 
   def test_positional_arguments_and_star_args_exceptions()
-    # skip "lol"
     tests = [
       {"args" => ["arg1", "arg2", "arg3"], "input" => "\"jokes\" \"fun_facts\" \"games\"\"",
-      "result" => nil, "exception" => ParserErrors.StringNotClosedError},
+      "result" => nil, "exception" => ParserErrors::StringNotClosedError},
 
       {"args" => ["arg1", "*arg2", "arg3"], "input" => "\"jokes\" \"fun_facts\" \"games\"",
-      "result" => nil, "exception" => ParserErrors.MissingKeywordArgumentError},
+      "result" => nil, "exception" => ParserErrors::MissingKeywordArgumentError},
 
       {"args" => ["arg1"], "input" => "\\\"jokes\"",
-      "result" => nil, "exception" => ParserErrors.InvalidCharacterError},
+      "result" => nil, "exception" => ParserErrors::InvalidCharacterError},
 
       {"args" => ["*arg1"], "input" => ": \"jokes\"",
-      "result" => nil, "exception" => ParserErrors.InvalidKeywordError},
+      "result" => nil, "exception" => ParserErrors::InvalidKeywordError},
 
       {"args" => ["*arg1"], "input" => "aaa\\aaa: \"jokes\"",
-      "result" => nil, "exception" => ParserErrors.InvalidKeywordError},
+      "result" => nil, "exception" => ParserErrors::InvalidKeywordError},
 
       {"args" => ["arg1"], "input" => "\"jokes\" \"fun_facts\"",
-      "result" => nil, "exception" => ParserErrors.TooMuchArgumentsError},
+      "result" => nil, "exception" => ParserErrors::TooMuchArgumentsError},
 
       {"args" => ["arg1", "arg2"], "input" => "\"jokes\"",
-      "result" => nil, "exception" => ParserErrors.NotEnoughArgumentsError},
+      "result" => nil, "exception" => ParserErrors::NotEnoughArgumentsError},
 
       {"args" => ["arg1", "arg2"], "input" => "\"jokes\" \"something else",
-      "result" => nil, "exception" => ParserErrors.StringNotClosedError}]
+      "result" => nil, "exception" => ParserErrors::StringNotClosedError}]
     _test(tests, "test_positional_arguments_and_star_args_exceptions")
   end
 
@@ -193,18 +188,17 @@ class TestParser < Minitest::Test
   end
 
   def test_keyword_arguments_and_star_args_exceptions()
-    skip "lol"
     tests = [
       {"args" => ["*arg1", "*arg2"], "input" => "arg2: \"jokes\" \"games\" arg1: \"fun_facts\" \"web_dev\" arg3:",
-      "result" => nil, "exception" => ParserErrors.EmptyKeywordError},
+      "result" => nil, "exception" => ParserErrors::EmptyKeywordError},
 
       {"args" => ["*arg1", "*arg2"], "input" => "arg2: \"jokes\" \"games\" arg1: \"fun_facts\" \"web_dev\" arg3:",
-      "result" => nil, "exception" => ParserErrors.EmptyKeywordError},
+      "result" => nil, "exception" => ParserErrors::EmptyKeywordError},
 
-      {"args" => ["*arg1", "*arg2"], "input" => "arg2: \"jokes\" \"games\" arg1: \"fun_facts\" \"web_dev\" arg3: \"aaa\"", "result" => nil, "exception" => ParserErrors.UnexpectedKeywordError},
+      {"args" => ["*arg1", "*arg2"], "input" => "arg2: \"jokes\" \"games\" arg1: \"fun_facts\" \"web_dev\" arg3: \"aaa\"", "result" => nil, "exception" => ParserErrors::UnexpectedKeywordError},
 
       {"args" => ["arg1"], "input" => "\"jokes\" include:",
-      "result" => nil, "exception" => ParserErrors.EmptyKeywordError}]
+      "result" => nil, "exception" => ParserErrors::EmptyKeywordError}]
 
     _test(tests, "test_keyword_arguments_and_star_args_exceptions")
   end
@@ -257,8 +251,8 @@ class TestParser < Minitest::Test
       {"args" => ["*cat"], "input" => "cat: japanese_bobtail maltese",
       "result" => {"cat" => ["japanese_bobtail", "maltese"]}, "exception" => nil},
 
-      # {"args" => ["cat"], "input" => "cat: orange_with_black_stripes\"",
-      # "result" => nil, "exception" => ParserErrors.StringNotClosedError},
+      {"args" => ["cat"], "input" => "cat: orange_with_black_stripes\"",
+      "result" => nil, "exception" => ParserErrors::StringNotClosedError},
 
       {"args" => ["cat", "color"], "input" => "cat: orange_with_black_stripes color: orange",
       "result" => {"cat" => ["orange_with_black_stripes"], "color" => ["orange"]}, "exception" => nil},
@@ -317,7 +311,7 @@ class TestParser < Minitest::Test
     skip "Haven't implemented this feature yet lol"
     tests = [
     {"args" => ["cat"], "input": "cat: orange_with_black_stripes",
-    "result": None, "exception": TypeError},
+    "result": nil, "exception": TypeError},
     ]
     _test(tests, "test_developer_type_errors")
   end
@@ -326,7 +320,7 @@ class TestParser < Minitest::Test
     skip "Haven't implemented this feature yet lol"
     tests = [
     {"args":["year: int"], "input": "year: 1970",
-    "result": {"year": 1970}, "exception": None},
+    "result": {"year": 1970}, "exception": nil},
     ]
     _test(tests, "test_types")
   end
