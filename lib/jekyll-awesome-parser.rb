@@ -2,6 +2,7 @@ require_relative "parser_errors.rb"
 
 class JekyllAwesomeParser
 
+  # Looks if there's an letter in a string in the left, or in the right of the pointer
   def peek(string, pointer, direction, target, stop=nil)
     if stop.class == String
       stop = Array(stop)
@@ -24,6 +25,7 @@ class JekyllAwesomeParser
     return [false, "end_of_string", string.size - 1]
   end
 
+  # Peeks continuously in one direction, and returns True if it eventually matches
   def peek_until(string, pointer, direction, target, stop=nil)
     pointer_direction = ({"left" => -1, "right" => 1})[direction]
     peek_pointer = pointer
@@ -36,6 +38,7 @@ class JekyllAwesomeParser
     end
   end
 
+  # Returns True if the peek_until eventually doesn't match
   def peek_until_not(string, pointer, direction, target)
     pointer_direction = ({"left" => -1, "right" => 1})[direction]
     peek_pointer = pointer
@@ -52,6 +55,10 @@ class JekyllAwesomeParser
     end
   end
 
+  # Does a peek_until, then does a peek (eg: peek_until ' ' then peeks for the letter '(')
+  # '       (potato)'  #  '(potato)'
+  #  ^      ^ match!   #   ^ doesn't match!
+  #  pointer           # pointer
   def peek_after(string, pointer, direction, target, target_after, stop=nil)
     if stop === nil
       stop = []
@@ -79,6 +86,7 @@ class JekyllAwesomeParser
     end
   end
 
+  # Gets the arg name from the methods arguments list (eg: "arg1=nil" becomes "arg1")
   def clean_args(arguments)
     clean_arguments = {}
     for (key, value) in Array(arguments.clone())
@@ -94,10 +102,12 @@ class JekyllAwesomeParser
     return clean_arguments
   end
 
+  # Ruby's dicts are ordered by insertion, so order it based on the methods arguments list
   def order_result(arguments, result)
     return arguments.map{|key|[key, result[key]]}.to_h
   end
 
+  # Grabs a specified error from the ParserErrors module, grabs some debug info, then returns the error
   def raise_parser_error(pointer, error, *args, extra_info)
     # You can't have an optional argument after a splat?????? why??????
     raise TypeError, "'extra_info' needs to be a Array" unless [Array, NilClass].include? extra_info.class
@@ -106,6 +116,7 @@ class JekyllAwesomeParser
     raise error.new({"user_input":@user_input, "pointer":pointer}, *args, extra_info=extra_info)
   end
 
+  # Validates the given method arguments by an developer. Since they are given as a string
   def validate_developer_arguments(args)
     error_note = "(This is a developer error, this error should be fixed by the\n" +
                 "developers and not the user, if you're the user, contact the developers!)"
@@ -146,16 +157,19 @@ class JekyllAwesomeParser
     end
   end
 
+  # Close a positional argument, and adds it to parsed_result
   def close_argument()
-    @flags["matching"], @flags["quote"] = [nil, nil]
     if @clean_lookup.include?(@current_arg)
       @current_arg = @clean_lookup[@current_arg]
     end
     @tmp_string = @tmp_string.strip
-    @parsed_result[@current_arg] = @parsed_result[@current_arg] + [@tmp_string]
+    @parsed_result[@current_arg] += [@tmp_string]
     @tmp_string = ""
+
+    @flags["matching"], @flags["quote"] = [nil, nil]
   end
 
+  # Checks if, given the pointer, there are any remaining quoteless arguments in the user_input
   def check_remaining_quoteless_args(pointer, user_input=nil)
     user_input = user_input || @user_input
     peek_pointer = pointer
@@ -185,6 +199,7 @@ class JekyllAwesomeParser
     end
   end
 
+  # Checks if, given the pointer, the exact next item in the user input is a quoteless argument
   def check_next_quoteless_arg(pointer)
     peek_result = peek(@user_input, pointer, "right", "", stop=["\\", " ", ","])
     peek_after_result = peek_after(@user_input, pointer, "right", target=[" ", ","], target_after="", stop=["\\", "\"", "'"])
@@ -197,6 +212,7 @@ class JekyllAwesomeParser
     return false
   end
 
+  # Bumps current_arg to the next argument in the methods arguments list, and does error checking too
   def bump_current_arg(pointer, letter)
     check_remaining_quote_args = lambda do
       return peek_until(@user_input, pointer, "right", ["\"", "'"])[1] == "match"
@@ -206,10 +222,12 @@ class JekyllAwesomeParser
     end
 
     if @current_arg[0] != "*"
+      # If there are any remaining positional arguments:
       if check_remaining_quoteless_args(pointer) || check_remaining_quote_args.call()
         if @arg_pointer == @method_args.size - 1
           raise_parser_error(pointer, "TooMuchArgumentsError", extra_info=nil)
         end
+        # If the exact next item in the input is a positional argument
         if check_next_quoteless_arg(pointer) || check_next_quote_args.call()
           @arg_pointer += 1
           @current_arg = @method_args[@arg_pointer]
@@ -220,12 +238,12 @@ class JekyllAwesomeParser
         raise_parser_error(pointer, "NotEnoughArgumentsError", extra_info=nil)
       end
     end
-    if @arg_pointer == @method_args.size - 1
-      return
-    end
-    if peek_until_not(@user_input, pointer, "right", " ")[0] == true
-      return
-    end
+
+    # End the method if current arg is the last one, and there's nothing left to parse
+    return if @arg_pointer == @method_args.size - 1
+    return if peek_until_not(@user_input, pointer, "right", " ")[0] == true
+
+    # If the current arg is a splat, and the next method argument is not optional, throw an error
     next_method_argument = @method_args[@method_args.index(@current_arg) + 1]
     if (@current_arg[0] == "*") && !next_method_argument.include?("=")
       raise_parser_error(pointer, "MissingKeywordArgumentError", extra_info=nil)
@@ -233,6 +251,7 @@ class JekyllAwesomeParser
   end
 
   def check_quoted_strings(pointer, letter)
+    # Ignore it if the quote is escaped
     return if peek(@user_input, pointer, "left", "\\")[0] == true
 
     if @flags["matching"] == "argument"
@@ -243,7 +262,10 @@ class JekyllAwesomeParser
     if @flags["matching"] != "argument"
       @tmp_string = ""
       @flags["matching"],@flags["quote"] = ["argument", letter]
-      if peek_until(@user_input, pointer, "right", ["'", "\""])[1] != "match"
+
+      # If there are no remaining quotes, throw an error
+      if peek_until(@user_input, pointer, "right", ["'", "\""])[1] != "match" and
+      peek(@user_input, pointer, "right", ["'", '"'])[1] != "match"
         raise_parser_error(pointer, "StringNotClosedError", extra_info=nil)
       end
     end
@@ -253,16 +275,42 @@ class JekyllAwesomeParser
     if @flags["quote"] == false
       raise_parser_error(pointer, "InvalidCharacterError", extra_info=nil) if letter == "\\"
 
+      @tmp_string += letter if pointer == @user_input.length - 1
       next_character_is_quote = peek(@user_input, pointer, "right", ["\"", "'"])
-      if pointer == @user_input.length - 1
-        @tmp_string += letter
-      end
+
+      # Checking either if the current character is a space, quote, comma, or it it's the
+      # last character in the user_input
       if [" ", ","].include?(letter) || (pointer == @user_input.size - 1) || next_character_is_quote[0]
         # Manually removing all commas, ok, it's hacky I know
         @tmp_string = @tmp_string.gsub(",", "")
         close_argument()
         bump_current_arg(pointer, letter)
       end
+    end
+  end
+
+  # Assigns current letter to tmp_string, and checks if the keyword argument is closed
+  def match_keywords(pointer, letter)
+    return if @flags["matching"] != "keyword"
+
+    if letter != ":"
+      raise_parser_error(pointer, "InvalidKeywordError", extra_info=nil) if ["\\"].include?(letter)
+      @tmp_string += letter
+    end
+    if letter == ":"
+      keyword = @tmp_string.strip
+      validate_keyword(letter, pointer, keyword)
+
+      # If there's quoted arguments or quoteless arguments to the left of the argument, bump the argument pointer
+      if peek_until(@user_input, pointer, "left", target=["\"", "'"])[1] == "match" || check_remaining_quoteless_args(0, @user_input[0...pointer] + ":")
+        @arg_pointer += 1
+      end
+
+      @current_arg = @dirty_lookup[@current_arg] if @dirty_lookup.include?(@current_arg)
+
+      @flags["matching"] = nil
+      @current_arg = keyword
+      @tmp_string = ""
     end
   end
 
@@ -283,47 +331,29 @@ class JekyllAwesomeParser
       end
 
       # Checking for a stray colon
-      if letter == ":"
-        if @flags["matching"] == nil
-          raise_parser_error(pointer, "InvalidKeywordError", extra_info=nil)
-        end
+      if letter == ":" and @flags["matching"] == nil
+        raise_parser_error(pointer, "InvalidKeywordError", extra_info=nil)
       end
 
       if @flags["matching"] == nil && ![" ", ","].include?(letter)
         raise_parser_error(pointer, "InvalidCharacterError", extra_info=nil) if letter == "\\"
 
         @tmp_string = ""
+        # Checking for a keyword argument
         if peek_until(@user_input, pointer, "right", target=[":"], stop=[" ", ","])[0] == false
           @flags["matching"],@flags["quote"] = ["argument", false]
           @tmp_string += letter
+        # Checking for a quote less positional argument
         else
           @flags["matching"] = "keyword"
           @tmp_string += letter
         end
 
       else
-        if @flags["matching"] == "keyword" && letter != ":"
-          raise_parser_error(pointer, "InvalidKeywordError", extra_info=nil) if ["\\"].include?(letter)
-          @tmp_string += letter
-        else
-          if @flags["matching"] == "keyword" && letter == ":"
-            keyword = @tmp_string.strip
-            validate_keyword(letter, pointer, keyword)
-            if peek_until(@user_input, pointer, "left", target=["\"", "'"])[1] == "match" || check_remaining_quoteless_args(0, @user_input[0...pointer] + ":")
-              @arg_pointer += 1
-            end
-
-            if @dirty_lookup.include?(@current_arg)
-              @current_arg = @dirty_lookup[@current_arg]
-            end
-
-            @flags["matching"] = nil
-            @current_arg = keyword
-            @tmp_string = ""
-          end
-        end
+        match_keywords(pointer, letter)
       end
     end
+
     return clean_args(@parsed_result)
   end
 end
