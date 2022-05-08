@@ -16,57 +16,65 @@ module ParserErrors
 
   class InvalidCharacterError < ParserError
     def initialize(info, *args, extra_info)
-      @message = ("Whoops, it seems like you put an invalid character!\n" +
-                  "In an additional note, if you tried to escape a quote,\n") +
-                  "you can only do that inside quotes"
+      @message = ("Invalid character, please don't use backslashes on their own.\n" +
+                  "(In an additional note, if you tried to escape a quote,\n") +
+                  "you can only do that inside quotes.)"
       super(info, extra_info)
     end
   end
   class StringNotClosedError < ParserError
     def initialize(info, *args, extra_info)
-      @message = "Whoops, it seems like you forgot to close a argument!"
+      @message = "String not closed, maybe you forgot to close an string or mixed different quotes?"
       super(info, extra_info)
     end
   end
   class InvalidKeywordError < ParserError
     def initialize(info, *args, extra_info)
-      @message = "Whoops, it seems like your keyword is invalid!"
+      @message = "Invalid Keyword, maybe you put a stray colon, or you put a backslash in your keyword?"
       super(info, extra_info)
     end
   end
   class EmptyKeywordError < ParserError
     def initialize(info, *args, extra_info)
-      @message = "Whoops, it seems like your keyword is empty!"
+      @message = "Empty keyword, nothing was detected past the keyword."
       super(info, extra_info)
     end
   end
   class TooMuchArgumentsError < ParserError
     def initialize(info, *args, extra_info)
-      @message = "Whoops, it seems like there's more given arguments than it's needed!"
+      @message = "Too much arguments, it was given more arguments than specified!"
       super(info, extra_info)
     end
   end
   class NotEnoughArgumentsError < ParserError
     def initialize(info, *args, extra_info)
-      @message = "Whoops, it seems like there's not enough given arguments!"
+      @message = "Not enough arguments, it was given less arguments than specified!"
       super(info, extra_info)
     end
   end
   class RepeatedKeywordError < ParserError
     def initialize(info, *args, extra_info)
-      @message = "Whoops, it seems like two or more repeated keywords!"
+      @message = "Repeated Keyword, you're not allowed to do that."
       super(info, extra_info)
     end
   end
   class UnexpectedKeywordError < ParserError
     def initialize(info, *args, extra_info)
-      @message = "Whoops, it seems like there was an unexpected keyword!"
+      @message = "Unexpected Keyword! It was given a keyword that was not specified in the method!"
       super(info, extra_info)
     end
   end
   class MissingKeywordArgumentError < ParserError
     def initialize(info, *args, extra_info)
-      @message = "Whoops, it seems like there's one or more missing keyword arguments"
+      @message = "Missing keyword, It was not given one or more required keyword arguments."
+      super(info, extra_info)
+    end
+  end
+  class ListNotClosedError < ParserError
+    def initialize(info, *args, extra_info)
+      @message = "List not closed! Closing list character ']' was not found!\n"+
+                  "(In an additional note, if you intended to use the brackets characters in\n"+
+                  "a string, you'll need to put quotes ('') in your string.)"
       super(info, extra_info)
     end
   end
