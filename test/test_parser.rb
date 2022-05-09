@@ -391,12 +391,21 @@ class TestParser < Minitest::Test
     tests = [
       [[""], "[Empty Argument]"],
       [[false], "[Wrong Arg Type]"],
+      [[nil], "[Wrong Arg Type]"],
+      [[123], "[Wrong Arg Type]"],
       [["arg1?"], "[Invalid Character]"],
       [["arg1 a"], "[Argument Name With Space]"],
       [["arg1:"], "[Empty Type]"],
       [["arg1:="], "[Empty Type]"],
       [["arg1: int =1"], "[Optional Arg After Type]"],
       [["arg1: int ="], "[Optional Arg After Type]"],
+      [["arg1: in t"], "[Type Name With Space]"],
+      [["arg1:in t"], "[Type Name With Space]"],
+      [["arg1: type_that_doesnt_exist"], "[Wrong Type]"],
+      [["arg1: int"], "[Wrong Type]"],
+      [["arg1: float"], "[Wrong Type]"],
+      [["0arg1"], "[Argument Starts With Number]"],
+      [["01233123123123arg1"], "[Argument Starts With Number]"],
     ]
     for test, i in tests.each_with_index
       input, error_name = test

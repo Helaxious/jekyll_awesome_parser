@@ -97,8 +97,7 @@ end
 module ParserTypeErrors
   def self.check_args_is_nil(args)
     if args == nil
-      raise TypeError, "'args' can't be empty, please fill with the following arguments:\n"+
-                        "[letter, invalid_characters]"
+      raise TypeError, "'args' can't be empty, please fill it with the methods arguments\n"
     end
   end
 
@@ -111,6 +110,14 @@ module ParserTypeErrors
   def self.wrong_argument_type(args)
     check_args_is_nil(args)
     message = "[Wrong Arg Type] '#{args['arg_name']}' is #{args['arg_type']} when it should be String"
+    raise_type_error(message, args, developer_error=false)
+  end
+
+  def self.arg_starts_with_number(args)
+    check_args_is_nil(args)
+    message = "[Argument Starts With Number] '#{args['arg_name']}' Starts with a number.\n"+
+              "(Ruby doesn't allow variables that starts with a number soooo...)"
+
     raise_type_error(message, args, developer_error=false)
   end
 
@@ -135,6 +142,13 @@ module ParserTypeErrors
     raise_type_error(message, args, developer_error=false)
   end
 
+  def self.type_name_with_space(args)
+    check_args_is_nil(args)
+    arg_name = args["arg_name"]
+    message = "[Type Name With Space] #{arg_name} has a type that should not have spaces."
+    raise_type_error(message, args, developer_error=false)
+  end
+
   def self.empty_type(args)
     check_args_is_nil(args)
     arg_name = args["arg_name"]
@@ -147,6 +161,18 @@ module ParserTypeErrors
     arg_name = args["arg_name"]
     message = "[Optional Arg After Type] #{arg_name} Has an optional arg (also known as 'keyword default').\n"+
               "after the type. (a '=' was detected after a ':')"
+    raise_type_error(message, args, developer_error=false)
+  end
+
+  def self.wrong_type(args)
+    check_args_is_nil(args)
+    type_name, number_note, type_list = args["type_name"], args["number_note"], args["type_list"]
+    message = "[Wrong Type] #{type_name} Is not a valid type. Maybe you mispelled?\n"
+    message += "(It was detected that you wanted to pass the type as an int/float.\n"+
+                "For simplicity, there is no differentiation between ints and floats.\n"+
+                "To pass a number type, use 'num' (eg: 'arg: num'). It will accept ints and floats.\n"+
+                "And it will return either a int or a float.)" if number_note == true
+    message += "(All valid types: #{type_list})"
     raise_type_error(message, args, developer_error=false)
   end
 end

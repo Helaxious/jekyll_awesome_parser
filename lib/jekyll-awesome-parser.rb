@@ -101,6 +101,7 @@ class JekyllAwesomeParser
     error_note = "(This is a developer error, this error should be fixed by the\n" +
                 "developers and not the user, if you're the user, contact the developers!)"
     invalid_characters = "()[]\\`^~!#$%&<>?@{}'\".,;/+"
+    type_list = ["num", "str", "list", "bool", "string", "boolean", "array"]
 
     if args.class != Array
       raise_parser_type_error("wrong_arg_list_type", {"arg_type" => args.class})
@@ -113,6 +114,11 @@ class JekyllAwesomeParser
       # If argument is the wrong type
       raise_parser_type_error("wrong_argument_type", {"arg_name" => arg, "arg_type" => arg.class}) if arg.class != String
 
+      arg = arg.strip
+      if %w[0 1 2 3 4 5 6 7 8 9].include? arg[0]
+        raise_parser_type_error("arg_starts_with_number", {"arg_name" => arg})
+      end
+
       # Checking invalid characters
       arg.split("").each do |letter|
         if invalid_characters.include? letter
@@ -122,19 +128,32 @@ class JekyllAwesomeParser
 
       if arg.include? ":" # If there's a type in the arg
         colon_pos = peek_until(arg, 0, "right", ":")[2]
-        arg_type = peek_until_not(arg, colon_pos, "right", " ")
-        if arg_type[0] == false
+        arg_type = peek_after(arg, colon_pos, "right", " ", "")
+
+        if peek_until_not(arg, colon_pos, "right", " ")[1] == "no_match"
           raise_parser_type_error("empty_type", {"arg_name" => arg})
         end
+
         if peek_until(arg, colon_pos, "right", "=")[1] == "match"
           raise_parser_type_error("optional_arg_after_type", {"arg_name" => arg})
+        end
+
+        # If there's a space in the type name:
+        if peek_until(arg, arg_type[2], "right", " ")[1] == "match"
+          raise_parser_type_error("type_name_with_space", {"arg_name" => arg})
+        end
+
+        type_name = arg[(arg_type[2])..].strip
+        if !type_list.include? type_name
+          number_note = ["int", "float", "integer"].include? type_name
+          raise_parser_type_error("wrong_type", {"type_name" => type_name, "number_note" => number_note, "type_list" => type_list})
         end
       end
       if arg.include? "=" # If the argument is optional
       end
 
       # If there's not a type nor is it optional, just check for spaces
-      if arg.strip.include? " " and !(arg.include? ":" and arg.include? "=")
+      if arg.strip.include? " " and !(arg.include? ":" or arg.include? "=")
         raise_parser_type_error("arg_name_with_space", {"arg_name" => arg})
       end
     end
