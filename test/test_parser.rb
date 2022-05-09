@@ -307,21 +307,110 @@ class TestParser < Minitest::Test
     _test(tests, "test_mix_double_single_no_quotes_keywords")
   end
 
-  def test_developer_type_errors()
-    skip "Haven't implemented this feature yet lol"
+  def test_empty_strings()
     tests = [
-    {"args" => ["cat"], "input": "cat: orange_with_black_stripes",
+    {"args" => ["arg1"], "input": "''",
+    "result": {"arg1" => nil}, "exception": nil},
+    ]
+    _test(tests, "test_developer_type_errors")
+  end
+
+  def test_empty_input()
+    tests = [
+    {"args" => ["arg1"], "input": "",
+    "result": {"arg1" => nil}, "exception": nil},
+    ]
+    _test(tests, "test_developer_type_errors")
+  end
+
+  def test_developer_type_errors()
+    tests = [
+    {"args" => "cat", "input": "cat: orange_with_black_stripes",
+    "result": nil, "exception": TypeError},
+
+    {"args" => "cat", "input": "cat: orange_with_black_stripes",
     "result": nil, "exception": TypeError},
     ]
     _test(tests, "test_developer_type_errors")
   end
 
-  def test_types()
-    skip "Haven't implemented this feature yet lol"
+  # The only automatic type conversion should be on lists
+  def test_list_conversion()
     tests = [
-    {"args":["year: int"], "input": "year: 1970",
-    "result": {"year": 1970}, "exception": nil},
     ]
-    _test(tests, "test_types")
+    _test(tests, "test_list_conversion")
+  end
+
+  def test_typed_method_arguments_same_types()
+    skip "Haven't implemented this feature yet!!"
+    tests = [
+    {"args":["article: str"], "input": "article: 'How I was raised by a bear'",
+    "result": {"article" => "How I was raised by a bear"}, "exception": nil},
+
+    {"args":["year: num"], "input": "year: 1970",
+    "result": {"year" => 1970}, "exception": nil},
+
+    {"args":["pi: num"], "input": "pi: 3.14159",
+    "result": {"pi" => 3.14159}, "exception": nil},
+
+    {"args":["awesome: bool"], "input": "awesome: true",
+    "result": {"awesome" => true}, "exception": nil},
+
+    {"args":["awesome: bool"], "input": "awesome: True",
+    "result": {"awesome" => true}, "exception": nil},
+
+    {"args":["awesome: bool"], "input": "awesome: false",
+    "result": {"awesome" => false}, "exception": nil},
+
+    {"args":["awesome: bool"], "input": "awesome: False",
+    "result": {"awesome" => false}, "exception": nil},
+
+    {"args":["recipe: list"], "input": "recipe: ['two eggs', 'one cup of flour', 'love']",
+    "result": {"recipe" => ['two eggs', 'one cup of flour', 'love']}, "exception": nil},
+    ]
+    _test(tests, "test_typed_method_arguments_basic")
+  end
+
+  def test_typed_method_arguments_different_types()
+    skip "Haven't implemented this feature yet!!!"
+    tests = [
+    {"args":["year: str"], "input": "year: 1970",
+    "result": {"year" => "1970"}, "exception": nil},
+
+    {"args":["year: str"], "input": "year: [1970]",
+    "result": nil, "exception": TypeError},
+
+    {"args":["year: int"], "input": "year: [1970]",
+    "result": nil, "exception": TypeError},
+    ]
+    _test(tests, "test_typed_method_arguments_different_types")
+  end
+
+  def test_validate_developer_arguments
+    # Note that this test's asserts number is actually half what it's supposed to be
+    tests = [
+      [[""], "[Empty Argument]"],
+      [[false], "[Wrong Arg Type]"],
+      [["arg1?"], "[Invalid Character]"],
+      [["arg1 a"], "[Argument Name With Space]"],
+      [["arg1:"], "[Empty Type]"],
+      [["arg1:="], "[Empty Type]"],
+      [["arg1: int =1"], "[Optional Arg After Type]"],
+      [["arg1: int ="], "[Optional Arg After Type]"],
+    ]
+    for test, i in tests.each_with_index
+      input, error_name = test
+      func_message = assert_raises(TypeError) { @@parser.validate_developer_arguments(input) }
+      assert(func_message.to_s.start_with?(error_name), "'#{func_message.to_s}' should start with '#{error_name}'")
+
+      if @@display_errors == true
+        begin
+          @@parser.validate_developer_arguments(input)
+        rescue TypeError => func_exception
+          puts "#{'='*25}\n[Test #{i} - Good Exception]"
+          puts "#{'-'*15}\n#{func_exception}\n#{'-'*15}"
+        end
+      end
+    end
   end
 end

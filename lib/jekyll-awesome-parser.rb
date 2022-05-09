@@ -4,23 +4,18 @@ class JekyllAwesomeParser
 
   # Looks if there's an letter in a string in the left, or in the right of the pointer
   def peek(string, pointer, direction, target, stop=nil)
-    if stop.class == String
-      stop = Array(stop)
-    end
-    if target.class == String
-      target = Array(target)
-    end
+    stop = Array(stop) if stop.class == String
+    target = Array(target) if target.class == String
+
     direction = ({"left" => -1, "right" => 1})[direction]
     if (0 <= pointer + direction) and (pointer + direction <= string.size - 1)
       if target.include?(string[pointer + direction])
         return [true, "match", pointer + direction]
-      else
-        if stop != nil && (stop.include?(string[pointer + direction]))
-          return [false, "stop", pointer + direction]
-        else
-          return [false, "no_match", pointer + direction]
-        end
       end
+      if stop != nil && (stop.include?(string[pointer + direction]))
+        return [false, "stop", pointer + direction]
+      end
+      return [false, "no_match", pointer + direction]
     end
     return [false, "end_of_string", string.size - 1]
   end
@@ -47,10 +42,9 @@ class JekyllAwesomeParser
       result = peek(string, peek_pointer, direction, target, nil)
       if result[1] == "no_match"
         return [true, "match", peek_pointer + pointer_direction]
-      else
-        if result[1] == "end_of_string"
-          return [false, "no_match", peek_pointer + pointer_direction]
-        end
+      end
+      if result[1] == "end_of_string"
+        return [false, "no_match", peek_pointer + pointer_direction]
       end
     end
   end
@@ -60,27 +54,17 @@ class JekyllAwesomeParser
   #  ^      ^ match!   #   ^ doesn't match!
   #  pointer           # pointer
   def peek_after(string, pointer, direction, target, target_after, stop=nil)
-    if stop === nil
-      stop = []
-    end
-    if stop.class == String
-      stop = Array(stop)
-    end
-    if target_after.class == String
-      target_after = Array(target_after)
-    end
+    stop = [] if stop === nil
+    stop = Array(stop) if stop.class == String
+    target_after = Array(target_after) if target_after.class == String
 
     if peek(string, pointer, "right", target)[0] == true
       second_peek = peek_until_not(string, pointer, direction, target)
-      if second_peek[0] == "no_match"
-        return second_peek
-      else
-        is_stop = stop.include?(string[second_peek[2]])
-        if is_stop
-          return [false, "stop", second_peek[2]]
-        end
-        return [target_after.include?(string[second_peek[2]]), "match", second_peek[2]]
-      end
+      return second_peek if second_peek[0] == "no_match"
+
+      is_stop = stop.include?(string[second_peek[2]])
+      return [false, "stop", second_peek[2]] if is_stop
+      return [target_after.include?(string[second_peek[2]]), "match", second_peek[2]]
     else
       return [false, "no_match", pointer]
     end
@@ -90,13 +74,8 @@ class JekyllAwesomeParser
   def clean_args(arguments)
     clean_arguments = {}
     for (key, value) in Array(arguments.clone())
-      if key.include?("*")
-        key = key[1..-1]
-      else
-        if key.include?("=")
-          key = key[0...key.index("=")]
-        end
-      end
+      key = key[1..-1] if key.include?("*")
+      key = key[0...key.index("=")] if key.include?("=")
       clean_arguments[key] = value
     end
     return clean_arguments
@@ -108,20 +87,56 @@ class JekyllAwesomeParser
   end
 
   # Grabs a specified error from the ParserErrors module, grabs some debug info, then returns the error
-  def raise_parser_error(pointer, error, *args, extra_info)
-    # You can't have an optional argument after a splat?????? why??????
-    raise TypeError, "'extra_info' needs to be a Array" unless [Array, NilClass].include? extra_info.class
-
+  def raise_parser_error(pointer, error, args=nil)
     error = ParserErrors.const_get(error)
-    raise error.new({"user_input":@user_input, "pointer":pointer}, *args, extra_info=extra_info)
+    raise error.new({"user_input":@user_input, "pointer":pointer}, args)
+  end
+
+  def raise_parser_type_error(error, args=nil)
+    error_method = ParserTypeErrors.send(error, args)
   end
 
   # Validates the given method arguments by an developer. Since they are given as a string
   def validate_developer_arguments(args)
     error_note = "(This is a developer error, this error should be fixed by the\n" +
                 "developers and not the user, if you're the user, contact the developers!)"
+    invalid_characters = "()[]\\`^~!#$%&<>?@{}'\".,;/+"
+
     if args.class != Array
-      raise TypeError, "Wrong type lol" + "\n" + error_note
+      raise_parser_type_error("wrong_arg_list_type", {"arg_type" => args.class})
+    end
+
+    for arg in args
+      # If argument is empty
+      raise_parser_type_error("empty_argument", {"arg_name" => arg}) if arg == ""
+
+      # If argument is the wrong type
+      raise_parser_type_error("wrong_argument_type", {"arg_name" => arg, "arg_type" => arg.class}) if arg.class != String
+
+      # Checking invalid characters
+      arg.split("").each do |letter|
+        if invalid_characters.include? letter
+          raise_parser_type_error("invalid_character", {"letter" => letter, "invalid_characters" => invalid_characters})
+        end
+      end
+
+      if arg.include? ":" # If there's a type in the arg
+        colon_pos = peek_until(arg, 0, "right", ":")[2]
+        arg_type = peek_until_not(arg, colon_pos, "right", " ")
+        if arg_type[0] == false
+          raise_parser_type_error("empty_type", {"arg_name" => arg})
+        end
+        if peek_until(arg, colon_pos, "right", "=")[1] == "match"
+          raise_parser_type_error("optional_arg_after_type", {"arg_name" => arg})
+        end
+      end
+      if arg.include? "=" # If the argument is optional
+      end
+
+      # If there's not a type nor is it optional, just check for spaces
+      if arg.strip.include? " " and !(arg.include? ":" and arg.include? "=")
+        raise_parser_type_error("arg_name_with_space", {"arg_name" => arg})
+      end
     end
   end
 
@@ -142,17 +157,17 @@ class JekyllAwesomeParser
 
   def validate_keyword(letter, pointer, keyword)
     if peek_until_not(@user_input, pointer, "right", target=[" "])[1] == "no_match"
-      raise_parser_error(pointer, "EmptyKeywordError", extra_info=nil)
+      raise_parser_error(pointer, "EmptyKeywordError")
     end
     if !@clean_lookup.include?(keyword)
-      raise_parser_error(pointer, "UnexpectedKeywordError", extra_info=nil)
+      raise_parser_error(pointer, "UnexpectedKeywordError")
     end
     dirty_keyword = @clean_lookup[keyword]
     if @parsed_result.include?(dirty_keyword) && !@parsed_result[dirty_keyword].empty?
-      raise_parser_error(pointer, "RepeatedKeywordError", extra_info=nil)
+      raise_parser_error(pointer, "RepeatedKeywordError")
     else
       if !@parsed_result.include?(dirty_keyword)
-        raise_parser_error(pointer, "UnexpectedKeywordError", extra_info=nil)
+        raise_parser_error(pointer, "UnexpectedKeywordError")
       end
     end
   end
@@ -225,7 +240,7 @@ class JekyllAwesomeParser
       # If there are any remaining positional arguments:
       if check_remaining_quoteless_args(pointer) || check_remaining_quote_args.call()
         if @arg_pointer == @method_args.size - 1
-          raise_parser_error(pointer, "TooMuchArgumentsError", extra_info=nil)
+          raise_parser_error(pointer, "TooMuchArgumentsError")
         end
         # If the exact next item in the input is a positional argument
         if check_next_quoteless_arg(pointer) || check_next_quote_args.call()
@@ -235,7 +250,7 @@ class JekyllAwesomeParser
         return
       end
       if @arg_pointer != @method_args.size - 1
-        raise_parser_error(pointer, "NotEnoughArgumentsError", extra_info=nil)
+        raise_parser_error(pointer, "NotEnoughArgumentsError")
       end
     end
 
@@ -246,7 +261,7 @@ class JekyllAwesomeParser
     # If the current arg is a splat, and the next method argument is not optional, throw an error
     next_method_argument = @method_args[@method_args.index(@current_arg) + 1]
     if (@current_arg[0] == "*") && !next_method_argument.include?("=")
-      raise_parser_error(pointer, "MissingKeywordArgumentError", extra_info=nil)
+      raise_parser_error(pointer, "MissingKeywordArgumentError")
     end
   end
 
@@ -266,14 +281,14 @@ class JekyllAwesomeParser
       # If there are no remaining quotes, throw an error
       if peek_until(@user_input, pointer, "right", ["'", "\""])[1] != "match" and
       peek(@user_input, pointer, "right", ["'", '"'])[1] != "match"
-        raise_parser_error(pointer, "StringNotClosedError", extra_info=nil)
+        raise_parser_error(pointer, "StringNotClosedError")
       end
     end
   end
 
   def check_quoteless_strings(pointer, letter)
     if @flags["quote"] == false
-      raise_parser_error(pointer, "InvalidCharacterError", extra_info=nil) if letter == "\\"
+      raise_parser_error(pointer, "InvalidCharacterError") if letter == "\\"
 
       @tmp_string += letter if pointer == @user_input.length - 1
       next_character_is_quote = peek(@user_input, pointer, "right", ["\"", "'"])
@@ -294,7 +309,7 @@ class JekyllAwesomeParser
     return if @flags["matching"] != "keyword"
 
     if letter != ":"
-      raise_parser_error(pointer, "InvalidKeywordError", extra_info=nil) if ["\\"].include?(letter)
+      raise_parser_error(pointer, "InvalidKeywordError") if ["\\"].include?(letter)
       @tmp_string += letter
     end
     if letter == ":"
@@ -332,11 +347,11 @@ class JekyllAwesomeParser
 
       # Checking for a stray colon
       if letter == ":" and @flags["matching"] == nil
-        raise_parser_error(pointer, "InvalidKeywordError", extra_info=nil)
+        raise_parser_error(pointer, "InvalidKeywordError")
       end
 
       if @flags["matching"] == nil && ![" ", ","].include?(letter)
-        raise_parser_error(pointer, "InvalidCharacterError", extra_info=nil) if letter == "\\"
+        raise_parser_error(pointer, "InvalidCharacterError") if letter == "\\"
 
         @tmp_string = ""
         # Checking for a keyword argument
