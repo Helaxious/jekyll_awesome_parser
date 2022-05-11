@@ -83,7 +83,7 @@ module ParserErrors
   end
 end
 
-def raise_type_error(message, args, developer_error=false)
+def raise_type_error(message, args, developer_error=true)
   if args != nil and args["extra_info"]
     args["extra_info"].each { |info| message += "\n" + info}
   end
@@ -104,13 +104,13 @@ module ParserTypeErrors
   def self.empty_argument(args)
     check_args_is_nil(args)
     message = "[Empty Argument] argument '#{args['arg_name']}' is empty"
-    raise_type_error(message, args, developer_error=false)
+    raise_type_error(message, args, developer_error=true)
   end
 
   def self.wrong_argument_type(args)
     check_args_is_nil(args)
     message = "[Wrong Arg Type] '#{args['arg_name']}' is #{args['arg_type']} when it should be String"
-    raise_type_error(message, args, developer_error=false)
+    raise_type_error(message, args, developer_error=true)
   end
 
   def self.arg_starts_with_number(args)
@@ -118,13 +118,13 @@ module ParserTypeErrors
     message = "[Argument Starts With Number] '#{args['arg_name']}' Starts with a number.\n"+
               "(Ruby doesn't allow variables that starts with a number soooo...)"
 
-    raise_type_error(message, args, developer_error=false)
+    raise_type_error(message, args, developer_error=true)
   end
 
   def self.wrong_arg_list_type(args)
     check_args_is_nil(args)
     message = "[Wrong Arg Type] argument list '#{args['arg_type']}' should be a Hash"
-    raise_type_error(message, args, developer_error=false)
+    raise_type_error(message, args, developer_error=true)
   end
 
   def self.invalid_character(args)
@@ -132,28 +132,28 @@ module ParserTypeErrors
     letter, invalid_characters = args["letter"], args["invalid_characters"]
     message = "[Invalid Character] The character '#{letter}' is not allowed\n"+
               "(Here's the characters you can't put in your args '#{invalid_characters}')"
-    raise_type_error(message, args, developer_error=false)
+    raise_type_error(message, args, developer_error=true)
   end
 
   def self.arg_name_with_space(args)
     check_args_is_nil(args)
     arg_name = args["arg_name"]
     message = "[Argument Name With Space] #{arg_name} should not have spaces."
-    raise_type_error(message, args, developer_error=false)
+    raise_type_error(message, args, developer_error=true)
   end
 
   def self.type_name_with_space(args)
     check_args_is_nil(args)
     arg_name = args["arg_name"]
     message = "[Type Name With Space] #{arg_name} has a type that should not have spaces."
-    raise_type_error(message, args, developer_error=false)
+    raise_type_error(message, args, developer_error=true)
   end
 
   def self.empty_type(args)
     check_args_is_nil(args)
     arg_name = args["arg_name"]
     message = "[Empty Type] #{arg_name} Has an empty type (nothing was detected past the ':')."
-    raise_type_error(message, args, developer_error=false)
+    raise_type_error(message, args, developer_error=true)
   end
 
   def self.optional_arg_after_type(args)
@@ -161,7 +161,7 @@ module ParserTypeErrors
     arg_name = args["arg_name"]
     message = "[Optional Arg After Type] #{arg_name} Has an optional arg (also known as 'keyword default').\n"+
               "after the type. (a '=' was detected after a ':')"
-    raise_type_error(message, args, developer_error=false)
+    raise_type_error(message, args, developer_error=true)
   end
 
   def self.wrong_type(args)
@@ -173,6 +173,21 @@ module ParserTypeErrors
                 "To pass a number type, use 'num' (eg: 'arg: num'). It will accept ints and floats.\n"+
                 "And it will return either a int or a float.)" if number_note == true
     message += "(All valid types: #{type_list})"
-    raise_type_error(message, args, developer_error=false)
+    raise_type_error(message, args, developer_error=true)
+  end
+
+  def self.empty_optional_arg(args)
+    check_args_is_nil(args)
+    arg_name = args["arg_name"]
+    message = "[Empty Optional Argument] #{arg_name} Has an empty optional argument (nothing was\n"+
+              "detected past the '=')"
+    raise_type_error(message, args, developer_error=true)
+  end
+
+  def self.pos_arg_with_space(args)
+    check_args_is_nil(args)
+    arg_name = args["arg_name"]
+    message = "[Positional Argument With Space] #{arg_name} has a positional argument that should not have spaces."
+    raise_type_error(message, args, developer_error=true)
   end
 end

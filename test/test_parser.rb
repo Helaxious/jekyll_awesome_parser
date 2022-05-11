@@ -406,6 +406,12 @@ class TestParser < Minitest::Test
       [["arg1: float"], "[Wrong Type]"],
       [["0arg1"], "[Argument Starts With Number]"],
       [["01233123123123arg1"], "[Argument Starts With Number]"],
+      [["arg1="], "[Empty Optional Argument]"],
+      [["arg1=nil:"], "[Empty Type]"],
+      [["arg1=ni l"], "[Positional Argument With Space]"],
+      [["arg1=  ni l"], "[Positional Argument With Space]"],
+      [["arg1=  ni l: num"], "[Positional Argument With Space]"],
+      [["arg1=  ni l: int"], "[Wrong Type]"],
     ]
     for test, i in tests.each_with_index
       input, error_name = test

@@ -150,6 +150,29 @@ class JekyllAwesomeParser
         end
       end
       if arg.include? "=" # If the argument is optional
+        equals_pos = peek_until(arg, 0, "right", "=")[2]
+        optional_arg = peek_after(arg, equals_pos, "right", " ", "")
+
+        optional_arg_pos = optional_arg[2]
+        # If there's no space after the '=', the position should add one
+        if optional_arg[1] == "no_match"
+          optional_arg_pos += 1
+        end
+
+        if peek_until_not(arg, equals_pos, "right", " ")[1] == "no_match"
+          raise_parser_type_error("empty_optional_arg", {"arg_name" => arg})
+        end
+
+        # Checking for a space in the optional argument
+        colon_pos = arg.size - 1
+        colon_match = peek_until(arg, optional_arg_pos, "right", ":")
+        if colon_match
+          colon_pos = colon_match[2]
+        end
+
+        if arg[optional_arg_pos..colon_pos].strip.include? ' '
+          raise_parser_type_error("pos_arg_with_space", {"arg_name" => arg})
+        end
       end
 
       # If there's not a type nor is it optional, just check for spaces
