@@ -309,12 +309,20 @@ class JekyllAwesomeParser
 
   def check_quoted_strings(pointer, letter)
     # Ignore it if the quote is escaped
-    return if peek(@user_input, pointer, "left", "\\")[0] == true
+    if peek(@user_input, pointer, "left", "\\")[0] == true
+      @tmp_string += letter
+      return
+    end
 
     if @flags["matching"] == "argument"
-      close_argument()
-      bump_current_arg(pointer, letter)
-      return
+      # If the quote is not the same opening quote (eg: matching ("), but found (')), dont bother
+      if letter != @flags["quote"]
+        @tmp_string += letter
+      else
+        close_argument()
+        bump_current_arg(pointer, letter)
+        return
+      end
     end
     if @flags["matching"] != "argument"
       @tmp_string = ""
@@ -383,6 +391,10 @@ class JekyllAwesomeParser
 
       if @flags["matching"] == "argument"
         check_quoteless_strings(pointer, letter)
+        if letter == "\\"
+          # Ignore if the escape character is not being escaped
+          next if peek(input, pointer, "left", "\\")[1] != "match"
+        end
         @tmp_string += letter
         next
       end
@@ -411,6 +423,8 @@ class JekyllAwesomeParser
       end
     end
 
+    raise_parser_error(pointer, "StringNotClosedError") if @flags["matching"] == "argument"
+    check_optional_args()
     return clean_args(@parsed_result)
   end
 end
