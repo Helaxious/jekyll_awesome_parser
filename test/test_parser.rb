@@ -111,7 +111,7 @@ class TestParser < Minitest::Test
   def test_init_variables()
     method_args,input = [["*arg1", "arg2=None", "arg3"], "potato"]
     test_parser = JekyllAwesomeParser.new
-    test_parser.init_variables(method_args, input)
+    test_parser.init_variables(method_args, input, false)
 
     clean_lookup = test_parser.instance_variable_get(:@clean_lookup)
     dirty_lookup = test_parser.instance_variable_get(:@dirty_lookup)
@@ -395,7 +395,12 @@ class TestParser < Minitest::Test
       [[false], "[Wrong Arg Type]"],
       [[nil], "[Wrong Arg Type]"],
       [[123], "[Wrong Arg Type]"],
-      [["arg1?"], "[Invalid Character]"],
+
+      [["arg1 = potato\""], "[Unclosed String]"],
+      [["arg1 = \'potato\""], "[Unclosed String]"],
+      [["arg1 = \"\"potato\""], "[Unclosed String]"],
+      [["arg1 = \"\'potato\""]],
+
       [["arg1 a"], "[Argument Name With Space]"],
       [["arg1:"], "[Empty Type]"],
       [["arg1:="], "[Empty Type]"],
@@ -410,12 +415,32 @@ class TestParser < Minitest::Test
       [["01233123123123arg1"], "[Argument Starts With Number]"],
       [["arg1="], "[Empty Optional Argument]"],
       [["arg1=nil:"], "[Empty Type]"],
-      [["arg1=ni l"], "[Positional Argument With Space]"],
-      [["arg1=  ni l"], "[Positional Argument With Space]"],
-      [["arg1=  ni l: num"], "[Positional Argument With Space]"],
+
+      [["arg1=ni l"], "[Optional Argument With Space]"],
+      [["arg1=  ni l"], "[Optional Argument With Space]"],
+      [["arg1=  ni l: num"], "[Optional Argument With Space]"],
+      [["arg1  =  ni l: num"], "[Optional Argument With Space]"],
       [["arg1=  ni l: int"], "[Wrong Type]"],
+
+      [["arg1 = 'potatochips'"]],
+      [["arg1 = \"potatochips\""]],
+
+      [["arg1 = 'potato chips'"]],
+      [["arg1 = 'ketchup with maionnaise'"]],
+      [["arg1 = 'spaghetti with meatballs'"]],
+
+      [["arg1 = \"\\\"potato\""]],
+      [["arg1 = \"\\\"potato\\\"\""]],
+      [["arg1 = \"\'potato\""]],
+      [["arg1 = '\"potato'"]],
+      [["arg1 = \"\'\\\"potato\\\"\'\""]],
     ]
     for test, i in tests.each_with_index
+      if test.size == 1
+        @@parser.validate_developer_arguments(test[0])
+        next
+      end
+
       input, error_name = test
       func_message = assert_raises(TypeError) { @@parser.validate_developer_arguments(input) }
       assert(func_message.to_s.start_with?(error_name), "'#{func_message.to_s}' should start with '#{error_name}'")
@@ -470,5 +495,25 @@ class TestParser < Minitest::Test
     "result": nil, "exception": ParserErrors::StringNotClosedError},
     ]
     _test(tests, "test_mix_match_quotes_unclosed_string")
+  end
+
+  def test_keyword_defaults_arguments
+    tests = [
+    {"args":["favorite_fruit=apple"], "input": "",
+    "result": {"favorite_fruit" => ["apple"]}, "exception": nil},
+
+    {"args":["true_or_false=true"], "input": "",
+    "result": {"true_or_false" => [true]}, "exception": nil},
+
+    {"args":["true_or_false=123"], "input": "",
+    "result": {"true_or_false" => [123]}, "exception": nil},
+
+    {"args":["favorite_fruit=\"apple\""], "input": "",
+    "result": {"favorite_fruit" => ["apple"]}, "exception": nil},
+
+    # {"args":["arg1", "arg2", "arg3=sauce"], "input": "arg1: apple arg2: vinegar",
+    # "result": {"arg1" => ["apple"], "arg2" => ["vinegar"], "arg3" => ["sauce"]}, "exception": nil},
+    ]
+    _test(tests, "test_keyword_defaults_arguments")
   end
 end

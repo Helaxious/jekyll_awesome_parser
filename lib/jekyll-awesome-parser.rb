@@ -96,11 +96,101 @@ class JekyllAwesomeParser
     error_method = ParserTypeErrors.send(error, args)
   end
 
+  def validate_dev_args_type(arg, type_list)
+    colon_pos = peek_until(arg, 0, "right", ":")[2]
+    arg_type = peek_after(arg, colon_pos, "right", " ", "")
+
+    if peek_until_not(arg, colon_pos, "right", " ")[1] == "no_match"
+      raise_parser_type_error("empty_type", {"arg_name" => arg})
+    end
+
+    if peek_until(arg, colon_pos, "right", "=")[1] == "match"
+      raise_parser_type_error("optional_arg_after_type", {"arg_name" => arg})
+    end
+
+    # If there's a space in the type name:
+    if peek_until(arg, arg_type[2], "right", " ")[1] == "match"
+      raise_parser_type_error("type_name_with_space", {"arg_name" => arg})
+    end
+
+    type_name = arg[(arg_type[2])..].strip
+    if !type_list.include? type_name
+      number_note = ["int", "float", "integer"].include? type_name
+      raise_parser_type_error("wrong_type", {"type_name" => type_name, "number_note" => number_note, "type_list" => type_list})
+    end
+  end
+
+  # Parse through an optional argument string
+  def validate_parse_optional_argument(full_arg, arg_name)
+    parsed_string = ""
+    matching = [false, nil]
+
+    for letter, i in arg_name.split("").each_with_index
+      if ["\"", "\'"].include? letter
+        matching[1] = letter if matching[1] == nil
+        if letter == matching[1]
+          matching[0] = !matching[0]
+        end
+        next
+      end
+    end
+
+    if matching[0] == true
+      raise_parser_type_error("unclosed_string", {"arg_name" => full_arg})
+    end
+
+    # Some extra cases to catch
+    if ["\"", "\'"].include? arg_name[0] and ["\"", "\'"].include? arg_name[-1]
+      if arg_name[0] != arg_name[-1]
+        raise_parser_type_error("unclosed_string", {"arg_name" => full_arg})
+      end
+    else
+      if ["\"", "\'"].include? arg_name[0] or ["\"", "\'"].include? arg_name[-1]
+        raise_parser_type_error("unclosed_string", {"arg_name" => full_arg})
+      end
+    end
+  end
+
+  def validate_dev_args_optional(arg)
+    equals_pos = peek_until(arg, 0, "right", "=")[2]
+    optional_arg = peek_after(arg, equals_pos, "right", " ", "")
+
+    optional_arg_pos = optional_arg[2]
+    # If there's no space after the '=', the position should add one
+    if optional_arg[1] == "no_match"
+      optional_arg_pos += 1
+    end
+
+    if peek_until_not(arg, equals_pos, "right", " ")[1] == "no_match"
+      raise_parser_type_error("empty_optional_arg", {"arg_name" => arg})
+    end
+
+    # Checking for a space in the optional argument
+    colon_pos = arg.size - 1
+    colon_match = peek_until(arg, optional_arg_pos, "right", ":")
+    if colon_match
+      colon_pos = colon_match[2]
+    end
+
+    matching_quote = false
+    arg_name = arg[optional_arg_pos..colon_pos].strip
+    for letter, i in arg_name.split("").each_with_index
+      if ["\"", "\'"].include? letter
+        matching_quote = !matching_quote
+        next
+      end
+      if letter == " " and matching_quote == false
+        raise_parser_type_error("optional_arg_with_space", {"arg_name" => arg})
+      end
+    end
+
+    validate_parse_optional_argument(arg, arg_name)
+  end
+
   # Validates the given method arguments by an developer. Since they are given as a string
   def validate_developer_arguments(args)
     error_note = "(This is a developer error, this error should be fixed by the\n" +
                 "developers and not the user, if you're the user, contact the developers!)"
-    invalid_characters = "()[]\\`^~!#$%&<>?@{}'\".,;/+"
     type_list = ["num", "str", "list", "bool", "string", "boolean", "array"]
 
     if args.class != Array
@@ -119,60 +209,12 @@ class JekyllAwesomeParser
         raise_parser_type_error("arg_starts_with_number", {"arg_name" => arg})
       end
 
-      # Checking invalid characters
-      arg.split("").each do |letter|
-        if invalid_characters.include? letter
-          raise_parser_type_error("invalid_character", {"letter" => letter, "invalid_characters" => invalid_characters})
-        end
-      end
-
       if arg.include? ":" # If there's a type in the arg
-        colon_pos = peek_until(arg, 0, "right", ":")[2]
-        arg_type = peek_after(arg, colon_pos, "right", " ", "")
-
-        if peek_until_not(arg, colon_pos, "right", " ")[1] == "no_match"
-          raise_parser_type_error("empty_type", {"arg_name" => arg})
-        end
-
-        if peek_until(arg, colon_pos, "right", "=")[1] == "match"
-          raise_parser_type_error("optional_arg_after_type", {"arg_name" => arg})
-        end
-
-        # If there's a space in the type name:
-        if peek_until(arg, arg_type[2], "right", " ")[1] == "match"
-          raise_parser_type_error("type_name_with_space", {"arg_name" => arg})
-        end
-
-        type_name = arg[(arg_type[2])..].strip
-        if !type_list.include? type_name
-          number_note = ["int", "float", "integer"].include? type_name
-          raise_parser_type_error("wrong_type", {"type_name" => type_name, "number_note" => number_note, "type_list" => type_list})
-        end
+        validate_dev_args_type(arg, type_list)
       end
+
       if arg.include? "=" # If the argument is optional
-        equals_pos = peek_until(arg, 0, "right", "=")[2]
-        optional_arg = peek_after(arg, equals_pos, "right", " ", "")
-
-        optional_arg_pos = optional_arg[2]
-        # If there's no space after the '=', the position should add one
-        if optional_arg[1] == "no_match"
-          optional_arg_pos += 1
-        end
-
-        if peek_until_not(arg, equals_pos, "right", " ")[1] == "no_match"
-          raise_parser_type_error("empty_optional_arg", {"arg_name" => arg})
-        end
-
-        # Checking for a space in the optional argument
-        colon_pos = arg.size - 1
-        colon_match = peek_until(arg, optional_arg_pos, "right", ":")
-        if colon_match
-          colon_pos = colon_match[2]
-        end
-
-        if arg[optional_arg_pos..colon_pos].strip.include? ' '
-          raise_parser_type_error("pos_arg_with_space", {"arg_name" => arg})
-        end
+        validate_dev_args_optional(arg)
       end
 
       # If there's not a type nor is it optional, just check for spaces
@@ -182,9 +224,14 @@ class JekyllAwesomeParser
     end
   end
 
-  def init_variables(method_args, user_input)
+  def init_variables(method_args, user_input, convert_types)
     @user_input = user_input
     @method_args = method_args
+    @convert_types = convert_types
+
+    if ![true, false].include? convert_types
+      raise TypeError, "convert_types must be a boolean, not #{convert_types.class}"
+    end
 
     clean_args = clean_args(@method_args.map{|key|[key, []]}.to_h).keys()
     @clean_lookup = clean_args.zip(@method_args).map{|clean, dirty|[clean, dirty]}.to_h
@@ -195,6 +242,22 @@ class JekyllAwesomeParser
     @current_arg = @method_args[0]
     @arg_pointer = 0
     @parsed_result = @method_args.map{|key|[key, []]}.to_h
+
+    @optional_arg_lookup = {}
+    @type_lookup = {}
+    # Parsing the method arguments to create keyword defaults and type lookups
+    for arg in method_args
+      if arg.include? ":"
+        @type_lookup[arg] = arg.split(":")[1].strip
+      end
+      if arg.include? "="
+        if arg.include? ":"
+          @optional_arg_lookup[arg] = convert_optional_argument(arg, arg.split("=")[1].split(":")[0].strip)
+        else
+          @optional_arg_lookup[arg] = convert_optional_argument(arg, arg.split("=")[1].strip)
+        end
+      end
+    end
   end
 
   def validate_keyword(letter, pointer, keyword)
@@ -212,6 +275,38 @@ class JekyllAwesomeParser
         raise_parser_error(pointer, "UnexpectedKeywordError")
       end
     end
+  end
+
+  # Convert the tmp string to its type as specified in the current_arg (eg: 'arg1: bool')
+  def convert_type(string, convert_nil=false)
+    check_int = /^[0-9]+$/
+    check_float = /^[0-9]+(\.[0-9]+)$/
+
+    return Integer(string) if string =~ check_int
+    return Float(string) if string =~ check_float
+
+    return false if string.downcase == "false"
+    return true if string.downcase == "true"
+    return nil if string.downcase == "nil" and convert_nil == true
+
+    # if @flags["matching"] == "list":
+    #   # Parse everything that is inside the list recursively calling parse_arguments
+    #   return parse_arguments([list_args*], @tmp_string)["list_args"]
+    return string
+  end
+
+  # Converts an optional argument, either converts the type, or parses a quoted string for errors
+  def convert_optional_argument(full_arg, argument)
+    # If the optional argument is enclosed between quotes:
+    if ["\"", "\'"].include?(argument[0]) and ["\"", "\'"].include?(argument[-1])
+      return validate_parse_optional_argument(full_arg, argument)
+    else
+      return convert_type(argument)
+    end
+  end
+
+  # Check if user arg matches the developer specified type and throws an error in case it doesn't
+  def check_user_types()
   end
 
   # Close a positional argument, and adds it to parsed_result
@@ -379,9 +474,18 @@ class JekyllAwesomeParser
     end
   end
 
-  def parse_arguments(methods_args, input)
+  def check_optional_args
+    # Checks every key in parsed_result for every empty entry and fills it with an optional arg if it exists
+    for k, v in @parsed_result
+      if v.empty? and @optional_arg_lookup[k] != nil
+        @parsed_result[k] = [@optional_arg_lookup[k]]
+      end
+    end
+  end
+
+  def parse_arguments(methods_args, input, convert_types=false)
     validate_developer_arguments(methods_args)
-    init_variables(methods_args, input)
+    init_variables(methods_args, input, convert_types)
 
     for letter, pointer in @user_input.split("").each_with_index
       if ['"', "'"].include?(letter)

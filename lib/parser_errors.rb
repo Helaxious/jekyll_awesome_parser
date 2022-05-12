@@ -184,10 +184,19 @@ module ParserTypeErrors
     raise_type_error(message, args, developer_error=true)
   end
 
-  def self.pos_arg_with_space(args)
+  def self.optional_arg_with_space(args)
     check_args_is_nil(args)
     arg_name = args["arg_name"]
-    message = "[Positional Argument With Space] #{arg_name} has a positional argument that should not have spaces."
+    message = "[Optional Argument With Space] #{arg_name} has a optional argument that should not have spaces."
+    raise_type_error(message, args, developer_error=true)
+  end
+
+  def self.unclosed_string(args)
+    check_args_is_nil(args)
+    arg_name = args["arg_name"]
+    message = "[Unclosed String] #{arg_name} has an unclosed quote, check if you accidentally have not\n"+
+              "mixed single and double quotes, or maybe you forgot to escape a quote, or maybe you just\n"+
+              "forgot to put a quote?"
     raise_type_error(message, args, developer_error=true)
   end
 end
