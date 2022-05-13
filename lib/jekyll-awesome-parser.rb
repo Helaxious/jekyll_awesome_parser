@@ -335,11 +335,16 @@ class JekyllAwesomeParser
 
   # Close a positional argument, and adds it to parsed_result
   def close_argument()
-    if @clean_lookup.include?(@current_arg)
-      @current_arg = @clean_lookup[@current_arg]
-    end
+    @current_arg = @clean_lookup[@current_arg] if @clean_lookup.include?(@current_arg)
     @tmp_string = @tmp_string.strip
-    @parsed_result[@current_arg] += [@tmp_string]
+
+    if @convert_types
+      argument = convert_type(@tmp_string)
+    else
+      argument = @tmp_string
+    end
+
+    @parsed_result[@current_arg] += [argument]
     @tmp_string = ""
 
     @flags["matching"], @flags["quote"] = [nil, nil]
@@ -551,7 +556,10 @@ class JekyllAwesomeParser
           # Yeah, creating additional copies of the parser isn't the best idea, I know
           tmp_parser = JekyllAwesomeParser.new
           parsed_list = tmp_parser.parse_arguments(["*list_arguments"], @tmp_string)
+
+          @current_arg = @clean_lookup[@current_arg] if @clean_lookup.include?(@current_arg)
           @parsed_result[@current_arg] += [parsed_list["list_arguments"]]
+          bump_current_arg(pointer, letter)
 
           @brackets_count = {"[" => 0, "]" => 0}
           @flags["matching"] = nil
@@ -564,6 +572,12 @@ class JekyllAwesomeParser
 
       if @flags["matching"] == "argument"
         check_quoteless_strings(pointer, letter)
+        if ["[", "]"].include? letter
+          @flags["matching"] = "list"
+          @brackets_count["["] = 1
+          next
+        end
+
         if letter == "\\"
           # Ignore if the escape character is not being escaped
           next if peek(input, pointer, "left", "\\")[1] != "match"
@@ -581,11 +595,18 @@ class JekyllAwesomeParser
         raise_parser_error(pointer, "InvalidCharacterError") if letter == "\\"
 
         @tmp_string = ""
-        # Checking for a keyword argument
+        # Checking for a quote less positional argument
         if peek_until(@user_input, pointer, "right", target=[":"], stop=[" ", ","])[0] == false
           @flags["matching"],@flags["quote"] = ["argument", false]
           @tmp_string += letter
-        # Checking for a quote less positional argument
+
+          # If the argument is one character length and it's the end of the user input
+          if pointer == input.size - 1
+            close_argument()
+            bump_current_arg(pointer, letter)
+          end
+
+        # Checking for a keyword argument
         else
           @flags["matching"] = "keyword"
           @tmp_string += letter

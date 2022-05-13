@@ -242,6 +242,13 @@ class TestParser < Minitest::Test
       {"args" => ["cat"], "input" => "cat: orange_with_black_stripes",
       "result" => {"cat" => ["orange_with_black_stripes"]}, "exception" => nil},
 
+      # This somehow gives an error, I don't even know how
+      {"args" => ["*numbers"], "input" => "1 2 3",
+      "result" => {"numbers" => [1, 2, 3]}, "exception" => nil},
+
+      {"args" => ["*numbers"], "input" => "a b c",
+      "result" => {"numbers" => ["a", "b", "c"]}, "exception" => nil},
+
       {"args" => ["arg1", "arg2", "arg3"], "input" => "apple vinegar sauce",
       "result" => {"arg1" => ["apple"], "arg2" => ["vinegar"], "arg3" => ["sauce"]}, "exception" => nil},
 
@@ -331,7 +338,43 @@ class TestParser < Minitest::Test
   def test_lists()
     tests = [
     {"args":["recipe"], "input": "recipe: ['brown sugar', \"flour\" love 12, false]",
-    "result": {"recipe" => [["brown sugar", "flour", "love", 123, false]]}, "exception": nil},
+    "result": {"recipe" => [["brown sugar", "flour", "love", 12, false]]}, "exception": nil},
+
+    {"args":["recipe"], "input": "recipe: [['brown sugar'], \"flour\" love [12], false]",
+    "result": {"recipe" => [[["brown sugar"], "flour", "love", [12], false]]}, "exception": nil},
+
+    {"args":["recipe"], "input": "recipe: [['brown sugar'], \"flour\" love [[[[12]]]], false]",
+    "result": {"recipe" => [[["brown sugar"], "flour", "love", [[[[12]]]], false]]}, "exception": nil},
+
+    {"args":["*recipe"], "input": "recipe: cake['brown sugar', \"flour\" love 12, false]3_servings",
+    "result": {"recipe" => ["cake", ["brown sugar", "flour", "love", 12, false], "3_servings"]}, "exception": nil},
+
+    {"args":["*recipe"], "input": "recipe: \'cake\'['brown sugar', \"flour\" love 12, false]\"3_servings\"",
+    "result": {"recipe" => ["cake", ["brown sugar", "flour", "love", 12, false], "3_servings"]}, "exception": nil},
+
+    {"args":["arg1"], "input": "[1 2 3]",
+    "result": {"arg1" => [[1, 2, 3]]}, "exception": nil},
+
+    {"args":["arg1", "arg2", "arg3"], "input": "potato [1 2 3] avocado",
+    "result": {"arg1" => ["potato"], "arg2" => [[1, 2, 3]], "arg3" => ["avocado"]}, "exception": nil},
+
+    {"args":["arg1", "*arg2", "arg3=nil"], "input": "potato [1 2 3]",
+    "result": {"arg1" => ["potato"], "arg2" => [[1, 2, 3]], "arg3" => [nil]}, "exception": nil},
+
+    {"args":["arg1=nil", "*arg2", "arg3=nil"], "input": "arg2: [1 2 3]",
+    "result": {"arg1" => [nil], "arg2" => [[1, 2, 3]], "arg3" => [nil]}, "exception": nil},
+
+    {"args":["*arg1", "arg2=nil", "arg3=nil"], "input": "arg1: [1 2 3]",
+    "result": {"arg1" => [[1, 2, 3]], "arg2" => [nil], "arg3" => [nil]}, "exception": nil},
+
+    {"args":["arg1", "arg2", "arg3"], "input": "arg1: [1 2 3] arg2: [[1]] arg3: [false]",
+    "result": {"arg1" => [[1, 2, 3]], "arg2" => [[[1]]], "arg3" => [[false]]}, "exception": nil},
+
+    {"args":["arg1", "arg2", "arg3"], "input": "arg2: [1 2 3] arg3: [[1]] arg1: [false]",
+    "result": {"arg1" => [[false]], "arg2" => [[1, 2, 3]], "arg3" => [[[1]]]}, "exception": nil},
+
+    {"args":["arg1", "arg2", "arg3"], "input": "[1 2 3] [[1]] [false]",
+    "result": {"arg1" => [[1, 2, 3]], "arg2" => [[[1]]], "arg3" => [[false]]}, "exception": nil},
     ]
     _test(tests, "test_list_conversion")
   end
