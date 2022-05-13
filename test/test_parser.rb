@@ -9,19 +9,19 @@ class TestParser < Minitest::Test
     @@display_errors = false
   end
 
-  def _test(tests, title=nil)
+  def _test(tests, title=nil, convert_types=true)
     # Shortening the name a bit
     parse = @@parser.method(:parse_arguments)
     for test, i in tests.each_with_index
       args, input, result, exception = test.values
 
       if exception == nil
-        assert_equal(result, parse.call(args, input))
+        assert_equal(result, parse.call(args, input, convert_types))
       else
-        assert_raises(exception) { parse.call(args, input )}
+        assert_raises(exception) { parse.call(args, input, convert_types)}
         if @@display_errors == true
           begin
-            parse.call(method_args=args, user_input=input)
+            parse.call(method_args=args, user_input=input, convert_types)
           rescue StandardError => func_exception
             puts "[#{title}]\n#{'='*25}\n[Test #{i} - Good Exception]"
             puts "#{'-'*15}\n#{func_exception}\n#{'-'*15}"
@@ -328,22 +328,17 @@ class TestParser < Minitest::Test
     _test(tests, "test_developer_type_errors")
   end
 
-  def test_developer_type_errors()
+  def test_lists()
     tests = [
-    {"args" => "cat", "input": "cat: orange_with_black_stripes",
-    "result": nil, "exception": TypeError},
-
-    {"args" => "cat", "input": "cat: orange_with_black_stripes",
-    "result": nil, "exception": TypeError},
-    ]
-    _test(tests, "test_developer_type_errors")
-  end
-
-  # The only automatic type conversion should be on lists
-  def test_list_conversion()
-    tests = [
+    {"args":["recipe"], "input": "recipe: ['brown sugar', \"flour\" love 12, false]",
+    "result": {"recipe" => [["brown sugar", "flour", "love", 123, false]]}, "exception": nil},
     ]
     _test(tests, "test_list_conversion")
+  end
+
+  # Tests the parser option of automatically convert types
+  def test_no_automatic_conversion()
+    skip
   end
 
   def test_typed_method_arguments_same_types()
@@ -394,6 +389,7 @@ class TestParser < Minitest::Test
   def test_validate_developer_arguments
     # Note that this test's asserts number is actually half what it's supposed to be
     tests = [
+      ["cat", "[Wrong Arg Type]"],
       [[""], "[Empty Argument]"],
       [[false], "[Wrong Arg Type]"],
       [[nil], "[Wrong Arg Type]"],

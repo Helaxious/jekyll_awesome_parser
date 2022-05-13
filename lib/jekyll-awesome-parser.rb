@@ -264,6 +264,7 @@ class JekyllAwesomeParser
     @current_arg = @method_args[0]
     @arg_pointer = 0
     @parsed_result = @method_args.map{|key|[key, []]}.to_h
+    @brackets_count = {"[" => 0, "]" => 0}
 
     @optional_arg_lookup = {}
     @type_lookup = {}
@@ -307,10 +308,10 @@ class JekyllAwesomeParser
     return Integer(string) if string =~ check_int
     return Float(string) if string =~ check_float
 
-    return false if string.downcase == "false"
-    return true if string.downcase == "true"
+    return false if string == "false"
+    return true if string == "true"
     # Small workaround, since in the optional_arg_lookup the argument can't be nil
-    return :nil if string.downcase == "nil" and convert_nil == true
+    return :nil if string == "nil" and convert_nil == true
 
     # if @flags["matching"] == "list":
     #   # Parse everything that is inside the list recursively calling parse_arguments
@@ -520,14 +521,45 @@ class JekyllAwesomeParser
     end
   end
 
-  def parse_arguments(methods_args, input, convert_types=false)
+  def parse_arguments(methods_args, input, convert_types=true)
     validate_developer_arguments(methods_args)
     init_variables(methods_args, input, convert_types)
 
     for letter, pointer in @user_input.split("").each_with_index
-      if ['"', "'"].include?(letter)
+      if ['"', "'"].include?(letter) and @flags["matching"] != "list"
         check_quoted_strings(pointer, letter)
         next # Don't run the code below, and go to the next iteration
+      end
+
+      # To identify the end of a list, even with nested list, we just need to count the number
+      # of opening and closing brackets, when they finally are equal, the list has closed
+      if ["[", "]"].include?(letter) and @flags["matching"] == nil
+        if letter == "]"
+          raise_parser_error(pointer, "ListNotClosedError")
+        else
+          @flags["matching"] = "list"
+          @brackets_count["["] = 1
+          next
+        end
+      end
+
+      if @flags["matching"] == "list"
+        if ["[", "]"].include?(letter)
+          @brackets_count[letter] += 1
+        end
+        if @brackets_count["["] == @brackets_count["]"]
+          # Yeah, creating additional copies of the parser isn't the best idea, I know
+          tmp_parser = JekyllAwesomeParser.new
+          parsed_list = tmp_parser.parse_arguments(["*list_arguments"], @tmp_string)
+          @parsed_result[@current_arg] += [parsed_list["list_arguments"]]
+
+          @brackets_count = {"[" => 0, "]" => 0}
+          @flags["matching"] = nil
+          @tmp_string = ""
+        else
+          @tmp_string += letter
+        end
+        next
       end
 
       if @flags["matching"] == "argument"
@@ -565,6 +597,7 @@ class JekyllAwesomeParser
     end
 
     raise_parser_error(pointer, "StringNotClosedError") if @flags["matching"] == "argument"
+    raise_parser_error(pointer, "ListNotClosedError") if @flags["matching"] == "list"
     check_optional_args()
     return clean_args(@parsed_result)
   end

@@ -123,7 +123,7 @@ module ParserTypeErrors
 
   def self.wrong_arg_list_type(args)
     check_args_is_nil(args)
-    message = "[Wrong Arg Type] argument list '#{args['arg_type']}' should be a Hash"
+    message = "[Wrong Arg Type] argument list '#{args['arg_type']}' should be an Array"
     raise_type_error(message, args, developer_error=true)
   end
 
