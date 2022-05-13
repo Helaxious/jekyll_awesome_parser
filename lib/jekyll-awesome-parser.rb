@@ -309,7 +309,8 @@ class JekyllAwesomeParser
 
     return false if string.downcase == "false"
     return true if string.downcase == "true"
-    return nil if string.downcase == "nil" and convert_nil == true
+    # Small workaround, since in the optional_arg_lookup the argument can't be nil
+    return :nil if string.downcase == "nil" and convert_nil == true
 
     # if @flags["matching"] == "list":
     #   # Parse everything that is inside the list recursively calling parse_arguments
@@ -323,7 +324,7 @@ class JekyllAwesomeParser
     if ["\"", "\'"].include?(argument[0]) and ["\"", "\'"].include?(argument[-1])
       return parse_optional_argument(full_arg, argument)
     else
-      return convert_type(argument)
+      return convert_type(argument, convert_nil=true)
     end
   end
 
@@ -395,6 +396,16 @@ class JekyllAwesomeParser
       return peek_after(@user_input, pointer, "right", [" ", ","], ['"',"'"])[0] || peek(@user_input, pointer, "right", ["\"", "'"])[0]
     end
 
+    # Gets every incomplete method argument, and checks if every one is optional
+    check_every_optional_args = lambda do
+      for k, v in @parsed_result
+        if v == []
+          return false if @optional_arg_lookup[k] == nil
+        end
+      end
+      return true
+    end
+
     if @current_arg[0] != "*"
       # If there are any remaining positional arguments:
       if check_remaining_quoteless_args(pointer) || check_remaining_quote_args.call()
@@ -408,7 +419,7 @@ class JekyllAwesomeParser
         end
         return
       end
-      if @arg_pointer != @method_args.size - 1
+      if @arg_pointer != @method_args.size - 1 and !check_every_optional_args.call()
         raise_parser_error(pointer, "NotEnoughArgumentsError")
       end
     end
@@ -501,6 +512,10 @@ class JekyllAwesomeParser
     for k, v in @parsed_result
       if v.empty? and @optional_arg_lookup[k] != nil
         @parsed_result[k] = [@optional_arg_lookup[k]]
+
+        if @optional_arg_lookup[k] == :nil
+          @parsed_result[k] = [nil]
+        end
       end
     end
   end

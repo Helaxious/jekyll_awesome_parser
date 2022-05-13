@@ -321,6 +321,9 @@ class TestParser < Minitest::Test
     tests = [
     {"args" => ["arg1"], "input": "",
     "result": {"arg1" => nil}, "exception": nil},
+
+    {"args" => ["arg1=123", "arg2=312", "arg3"], "input": "",
+    "result": {"arg1" => nil}, "exception": nil},
     ]
     _test(tests, "test_developer_type_errors")
   end
@@ -497,7 +500,7 @@ class TestParser < Minitest::Test
     _test(tests, "test_mix_match_quotes_unclosed_string")
   end
 
-  def test_keyword_defaults_arguments
+  def test_keyword_defaults_arguments_single_args
     tests = [
     {"args":["favorite_fruit=apple"], "input": "",
     "result": {"favorite_fruit" => ["apple"]}, "exception": nil},
@@ -519,9 +522,43 @@ class TestParser < Minitest::Test
 
     {"args":["favorite_fruit=\"He replies, \\\"'Do you mean the comic?' No, the comic is kinda nice\\\"\""], "input": "",
     "result": {"favorite_fruit" => ["He replies, \"'Do you mean the comic?' No, the comic is kinda nice\""]}, "exception": nil},
+    ]
+    _test(tests, "test_keyword_defaults_arguments")
+  end
 
-    # {"args":["arg1", "arg2", "arg3=sauce"], "input": "arg1: apple arg2: vinegar",
-    # "result": {"arg1" => ["apple"], "arg2" => ["vinegar"], "arg3" => ["sauce"]}, "exception": nil},
+  def test_keyword_defaults_arguments_multiple_args
+    tests = [
+    {"args":["arg1", "arg2", "arg3=sauce"], "input": "arg1: apple arg2: vinegar",
+    "result": {"arg1" => ["apple"], "arg2" => ["vinegar"], "arg3" => ["sauce"]}, "exception": nil},
+
+    {"args":["arg1", "arg2=pineapple", "arg3"], "input": "arg1: apple arg3: vinegar",
+    "result": {"arg1" => ["apple"], "arg2" => ["pineapple"], "arg3" => ["vinegar"]}, "exception": nil},
+
+    {"args":["arg1=apple", "arg2=pineapple", "arg3"], "input": "arg3: vinegar",
+    "result": {"arg1" => ["apple"], "arg2" => ["pineapple"], "arg3" => ["vinegar"]}, "exception": nil},
+
+    {"args":["*arg1=apple"], "input": "",
+    "result": {"arg1" => ["apple"]}, "exception": nil},
+
+    {"args":["*arg1=apple"], "input": "super duper hyper quack",
+    "result": {"arg1" => ["super", "duper", "hyper", "quack"]}, "exception": nil},
+
+    {"args":["arg1", "*arg2", "arg3=quack"], "input": "super duper hyper",
+    "result": {"arg1" => ["super"], "arg2" => ["duper", "hyper"], "arg3" => ["quack"]}, "exception": nil},
+
+    {"args":["arg1=something", "*arg2"], "input": "super duper hyper",
+    "result": {"arg1" => ["super"], "arg2" => ["duper", "hyper"]}, "exception": nil},
+
+    {"args":["arg1=something", "arg2=123", "arg3=nil"], "input": "",
+    "result": {"arg1" => ["something"], "arg2" => [123], "arg3" => [nil]}, "exception": nil},
+    ]
+    _test(tests, "test_keyword_defaults_arguments")
+  end
+
+  def test_keyword_defaults_arguments_errors
+    tests = [
+    {"args":["arg1=something", "arg2", "arg3"], "input": "super",
+    "result": nil, "exception": ParserErrors::NotEnoughArgumentsError},
     ]
     _test(tests, "test_keyword_defaults_arguments")
   end
