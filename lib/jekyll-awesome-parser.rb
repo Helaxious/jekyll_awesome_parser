@@ -139,7 +139,11 @@ class JekyllAwesomeParser
           parsed_string += letter
         else
           matching[1] = letter if matching[1] == nil
-          matching[0] = !matching[0] if letter == matching[1]
+          if letter == matching[1]
+            matching[0] = !matching[0]
+          else
+            parsed_string += letter
+          end
           next
         end
       end
@@ -187,14 +191,17 @@ class JekyllAwesomeParser
       colon_pos = colon_match[2]
     end
 
-    matching_quote = false
+    matching = [false, nil]
     arg_name = arg[optional_arg_pos..colon_pos].strip
     for letter, i in arg_name.split("").each_with_index
       if ["\"", "\'"].include? letter
-        matching_quote = !matching_quote
-        next
+        if peek(arg_name, i, "left", "\\")[1] != "match"
+          matching[1] = letter if matching[1] == nil
+          matching[0] = !matching[0] if letter == matching[1]
+          next
+        end
       end
-      if letter == " " and matching_quote == false
+      if letter == " " and matching[0] == false
         raise_parser_type_error("optional_arg_with_space", {"arg_name" => arg})
       end
     end
