@@ -511,6 +511,9 @@ class TestParser < Minitest::Test
     {"args":["favorite_fruit=\"apple\""], "input": "",
     "result": {"favorite_fruit" => ["apple"]}, "exception": nil},
 
+    {"args":["favorite_fruit=\"He says, 'I hate peanuts'\""], "input": "",
+    "result": {"favorite_fruit" => ["He says, 'I hate peanuts"]}, "exception": nil},
+
     # {"args":["arg1", "arg2", "arg3=sauce"], "input": "arg1: apple arg2: vinegar",
     # "result": {"arg1" => ["apple"], "arg2" => ["vinegar"], "arg3" => ["sauce"]}, "exception": nil},
     ]

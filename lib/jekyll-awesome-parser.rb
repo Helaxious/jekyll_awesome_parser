@@ -121,17 +121,30 @@ class JekyllAwesomeParser
   end
 
   # Parse through an optional argument string
-  def validate_parse_optional_argument(full_arg, arg_name)
+  def parse_optional_argument(full_arg, arg_name)
     parsed_string = ""
     matching = [false, nil]
 
     for letter, i in arg_name.split("").each_with_index
-      if ["\"", "\'"].include? letter
-        matching[1] = letter if matching[1] == nil
-        if letter == matching[1]
-          matching[0] = !matching[0]
+      # Unless the escape character is itself escaped, ignore
+      if letter == "\\"
+        if peek(arg_name, i, "left", "\\")[1] == "match"
+          parsed_string += letter
         end
-        next
+      end
+
+      if ["\"", "\'"].include? letter
+        # If the quote is escaped, ignore it
+        if peek(arg_name, i, "left", "\\")[1] == "match"
+          parsed_string += letter
+        else
+          matching[1] = letter if matching[1] == nil
+          matching[0] = !matching[0] if letter == matching[1]
+          next
+        end
+      end
+      if !["\\", "\"", "\'"].include? letter
+        parsed_string += letter
       end
     end
 
@@ -149,6 +162,8 @@ class JekyllAwesomeParser
         raise_parser_type_error("unclosed_string", {"arg_name" => full_arg})
       end
     end
+
+    return parsed_string
   end
 
   def validate_dev_args_optional(arg)
@@ -184,7 +199,7 @@ class JekyllAwesomeParser
       end
     end
 
-    validate_parse_optional_argument(arg, arg_name)
+    parse_optional_argument(arg, arg_name)
   end
 
   # Validates the given method arguments by an developer. Since they are given as a string
@@ -299,7 +314,7 @@ class JekyllAwesomeParser
   def convert_optional_argument(full_arg, argument)
     # If the optional argument is enclosed between quotes:
     if ["\"", "\'"].include?(argument[0]) and ["\"", "\'"].include?(argument[-1])
-      return validate_parse_optional_argument(full_arg, argument)
+      return parse_optional_argument(full_arg, argument)
     else
       return convert_type(argument)
     end
