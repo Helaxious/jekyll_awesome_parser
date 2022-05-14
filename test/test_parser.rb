@@ -1,5 +1,5 @@
 require "minitest/autorun"
-require_relative "../lib/jekyll-awesome-parser.rb"
+require_relative "../lib/jekyll_awesome_parser.rb"
 
 require_relative "test_cases/keyword_arguments.rb"
 require_relative "test_cases/keyword_defaults.rb"
