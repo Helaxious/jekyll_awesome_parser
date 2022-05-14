@@ -9,15 +9,10 @@ require_relative "test_cases/strings_and_etc.rb"
 require_relative "test_cases/types_and_method_arguments.rb"
 
 class TestParser < Minitest::Test
-  @@display_errors = false
   @@parser = JekyllAwesomeParser.new
-
-  def setup
-    @@display_errors = false
-  end
+  @@display_errors = true
 
   def _test(tests, title=nil, convert_types=true)
-    # Shortening the name a bit
     parse = @@parser.method(:parse_arguments)
     for test, i in tests.each_with_index
       args, input, result, exception = test.values
