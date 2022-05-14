@@ -3,9 +3,9 @@ require_relative "jekyll-awesome-parser/check_lists.rb"
 require_relative "jekyll-awesome-parser/init_variables.rb"
 require_relative "jekyll-awesome-parser/keyword_arguments.rb"
 require_relative "jekyll-awesome-parser/parser_errors.rb"
-require_relative "jekyll-awesome-parser/peek.rb"
+require_relative "jekyll-awesome-parser/peek_functions.rb"
 require_relative "jekyll-awesome-parser/positional_args.rb"
-require_relative "jekyll-awesome-parser/type.rb"
+require_relative "jekyll-awesome-parser/type_functions.rb"
 require_relative "jekyll-awesome-parser/validate_developer_arguments.rb"
 
 class JekyllAwesomeParser
