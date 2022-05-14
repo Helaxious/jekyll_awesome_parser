@@ -1,35 +1,4 @@
-require "minitest/autorun"
-require_relative "../lib/jekyll-awesome-parser.rb"
-
-class TestKeywordArguments < Minitest::Test
-  @@display_errors = false
-  @@parser = JekyllAwesomeParser.new
-
-  def setup
-    @@display_errors = false
-  end
-
-  def _test(tests, title=nil, convert_types=true)
-    # Shortening the name a bit
-    parse = @@parser.method(:parse_arguments)
-    for test, i in tests.each_with_index
-      args, input, result, exception = test.values
-
-      if exception == nil
-        assert_equal(result, parse.call(args, input, convert_types))
-      else
-        assert_raises(exception) { parse.call(args, input, convert_types)}
-        if @@display_errors == true
-          begin
-            parse.call(method_args=args, user_input=input, convert_types)
-          rescue StandardError => func_exception
-            puts "[#{title}]\n#{'='*25}\n[Test #{i} - Good Exception]"
-            puts "#{'-'*15}\n#{func_exception}\n#{'-'*15}"
-          end
-        end
-      end
-    end
-  end
+class TestParser < Minitest::Test
   def test_keyword_arguments_and_star_args()
     tests = [
       {"args" => ["arg1"], "input" => "arg1: \"jokes\"",
@@ -62,6 +31,7 @@ class TestKeywordArguments < Minitest::Test
 
     _test(tests, "test_keyword_arguments_and_star_args_exceptions")
   end
+
   def test_mix_double_single_no_quotes_keywords()
     tests = [
     {"args" => ["arg1", "arg2"], "input" => "arg1: potato arg2: \"milk\"",
@@ -77,7 +47,6 @@ class TestKeywordArguments < Minitest::Test
     "result" => {"breakfast" => ["orange_juice"], "lunch" => ["spaghetti"], "dinner" => ["fruit_salad"]},
     "exception" => nil}
     ]
-
     _test(tests, "test_mix_double_single_no_quotes_keywords")
   end
 end

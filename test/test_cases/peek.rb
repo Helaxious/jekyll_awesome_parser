@@ -1,9 +1,4 @@
-require "minitest/autorun"
-require_relative "../lib/jekyll-awesome-parser.rb"
-
-class TestPeek < Minitest::Test
-  @@parser = JekyllAwesomeParser.new
-
+class TestParser < Minitest::Test
   def test_peek()
     tests = [
     [["abcdcba", 2, "right", "d", ""],  [true, "match", 3]],

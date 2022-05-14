@@ -9,7 +9,6 @@ require_relative "jekyll-awesome-parser/type_functions.rb"
 require_relative "jekyll-awesome-parser/validate_developer_arguments.rb"
 
 class JekyllAwesomeParser
-
   def initialize
     @matching_list = nil
     @actual_type_name = nil
