@@ -31,6 +31,45 @@ class TestParser < Minitest::Test
     end
   end
 
+  def _test_validate_developer_arguments(tests)
+    for test, i in tests.each_with_index
+      if test.size == 1
+        @@parser.validate_developer_arguments(test[0])
+        next
+      end
+
+      input, error_name = test
+      func_message = assert_raises(TypeError) { @@parser.validate_developer_arguments(input) }
+      assert(func_message.to_s.start_with?(error_name), "'#{func_message.to_s}' should start with '#{error_name}'")
+
+      if @@display_errors == true
+        begin
+          @@parser.validate_developer_arguments(input)
+        rescue TypeError => func_exception
+          puts "#{'='*25}\n[Test #{i} - Good Exception]"
+          puts "#{'-'*15}\n#{func_exception}\n#{'-'*15}"
+        end
+      end
+    end
+  end
+
+  def _test_wrong_type_errors(tests)
+    for test, i in tests.each_with_index
+      methods, input = test
+      func_message = assert_raises(TypeError) { @@parser.parse_arguments(methods, input) }
+      assert(func_message.to_s.start_with?("[Wrong Type]"), "'#{func_message.to_s}' should start with [Wrong Type]")
+
+      if @@display_errors == true
+        begin
+          @@parser.parse_arguments(methods, input)
+        rescue TypeError => func_exception
+          puts "#{'='*25}\n[Test #{i} - Good Exception]"
+          puts "#{'-'*15}\n#{func_exception}\n#{'-'*15}"
+        end
+      end
+    end
+  end
+
   def test_peek()
     tests = [
     [["abcdcba", 2, "right", "d", ""],  [true, "match", 3]],
@@ -385,48 +424,52 @@ class TestParser < Minitest::Test
   end
 
   def test_typed_method_arguments_same_types()
-    skip "Haven't implemented this feature yet!!"
     tests = [
     {"args":["article: str"], "input": "article: 'How I was raised by a bear'",
-    "result": {"article" => "How I was raised by a bear"}, "exception": nil},
+    "result": {"article" => ["How I was raised by a bear"]}, "exception": nil},
 
     {"args":["year: num"], "input": "year: 1970",
-    "result": {"year" => 1970}, "exception": nil},
+    "result": {"year" => [1970]}, "exception": nil},
 
     {"args":["pi: num"], "input": "pi: 3.14159",
-    "result": {"pi" => 3.14159}, "exception": nil},
+    "result": {"pi" => [3.14159]}, "exception": nil},
 
     {"args":["awesome: bool"], "input": "awesome: true",
-    "result": {"awesome" => true}, "exception": nil},
-
-    {"args":["awesome: bool"], "input": "awesome: True",
-    "result": {"awesome" => true}, "exception": nil},
+    "result": {"awesome" => [true]}, "exception": nil},
 
     {"args":["awesome: bool"], "input": "awesome: false",
-    "result": {"awesome" => false}, "exception": nil},
-
-    {"args":["awesome: bool"], "input": "awesome: False",
-    "result": {"awesome" => false}, "exception": nil},
+    "result": {"awesome" => [false]}, "exception": nil},
 
     {"args":["recipe: list"], "input": "recipe: ['two eggs', 'one cup of flour', 'love']",
-    "result": {"recipe" => ['two eggs', 'one cup of flour', 'love']}, "exception": nil},
+    "result": {"recipe" => [['two eggs', 'one cup of flour', 'love']]}, "exception": nil},
     ]
     _test(tests, "test_typed_method_arguments_basic")
   end
 
   def test_typed_method_arguments_different_types()
-    skip "Haven't implemented this feature yet!!!"
     tests = [
-    {"args":["year: str"], "input": "year: 1970",
-    "result": {"year" => "1970"}, "exception": nil},
+    [["year: str"], "year: 1970"],
+    [["year: bool"], "year: 1970"],
+    [["year: list"], "year: 1970"],
 
-    {"args":["year: str"], "input": "year: [1970]",
-    "result": nil, "exception": TypeError},
+    [["year: str"], "year: [1970]"],
+    [["year: num"], "year: [1970]"],
+    [["year: bool"], "year: [1970]"],
 
-    {"args":["year: int"], "input": "year: [1970]",
-    "result": nil, "exception": TypeError},
+    [["year: num"], "year: \"1970\""],
+    [["year: bool"], "year: \"1970\""],
+    [["year: list"], "year: \"1970\""],
+
+    [["year: str"], "year: true"],
+    [["year: num"], "year: true"],
+    [["year: list"], "year: true"],
+
+    [["year: str", "age: num", "recipe: list"], "year: \"1970\" age: 20 aaa"],
+    [["year: num", "age: num", "recipe: list"], "year: \"1970\" age: 20 [1, 2, 3]"],
+    [["year", "age: num", "recipe: list"], "year: \"1970\" age: 20 123"],
+    [["*year: num"], "1 2 3 4 arg"],
     ]
-    _test(tests, "test_typed_method_arguments_different_types")
+    _test_wrong_type_errors(tests)
   end
 
   def test_validate_developer_arguments
@@ -450,9 +493,9 @@ class TestParser < Minitest::Test
       [["arg1: int ="], "[Optional Arg After Type]"],
       [["arg1: in t"], "[Type Name With Space]"],
       [["arg1:in t"], "[Type Name With Space]"],
-      [["arg1: type_that_doesnt_exist"], "[Wrong Type]"],
-      [["arg1: int"], "[Wrong Type]"],
-      [["arg1: float"], "[Wrong Type]"],
+      [["arg1: type_that_doesnt_exist"], "[Invalid Type]"],
+      [["arg1: int"], "[Invalid Type]"],
+      [["arg1: float"], "[Invalid Type]"],
       [["0arg1"], "[Argument Starts With Number]"],
       [["01233123123123arg1"], "[Argument Starts With Number]"],
       [["arg1="], "[Empty Optional Argument]"],
@@ -462,7 +505,7 @@ class TestParser < Minitest::Test
       [["arg1=  ni l"], "[Optional Argument With Space]"],
       [["arg1=  ni l: num"], "[Optional Argument With Space]"],
       [["arg1  =  ni l: num"], "[Optional Argument With Space]"],
-      [["arg1=  ni l: int"], "[Wrong Type]"],
+      [["arg1=  ni l: int"], "[Invalid Type]"],
 
       [["arg1= ]"], "[Unclosed List]"],
       [["arg1= ["], "[Unclosed List]"],
@@ -492,25 +535,7 @@ class TestParser < Minitest::Test
       [["arg1 = '\"potato'"]],
       [["arg1 = \"\'\\\"potato\\\"\'\""]],
     ]
-    for test, i in tests.each_with_index
-      if test.size == 1
-        @@parser.validate_developer_arguments(test[0])
-        next
-      end
-
-      input, error_name = test
-      func_message = assert_raises(TypeError) { @@parser.validate_developer_arguments(input) }
-      assert(func_message.to_s.start_with?(error_name), "'#{func_message.to_s}' should start with '#{error_name}'")
-
-      if @@display_errors == true
-        begin
-          @@parser.validate_developer_arguments(input)
-        rescue TypeError => func_exception
-          puts "#{'='*25}\n[Test #{i} - Good Exception]"
-          puts "#{'-'*15}\n#{func_exception}\n#{'-'*15}"
-        end
-      end
-    end
+    _test_validate_developer_arguments(tests)
   end
 
   def test_mix_match_quotes

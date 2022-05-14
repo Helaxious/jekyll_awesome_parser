@@ -76,6 +76,7 @@ class JekyllAwesomeParser
     for (key, value) in Array(arguments.clone())
       key = key[1..-1] if key.include?("*")
       key = key[0...key.index("=")] if key.include?("=")
+      key = key[0...key.index(":")] if key.include?(":")
       clean_arguments[key] = value
     end
     return clean_arguments
@@ -116,7 +117,7 @@ class JekyllAwesomeParser
     type_name = arg[(arg_type[2])..].strip
     if !type_list.include? type_name
       number_note = ["int", "float", "integer"].include? type_name
-      raise_parser_type_error("wrong_type", {"type_name" => type_name, "number_note" => number_note, "type_list" => type_list})
+      raise_parser_type_error("invalid_type", {"type_name" => type_name, "number_note" => number_note, "type_list" => type_list})
     end
   end
 
@@ -344,10 +345,6 @@ class JekyllAwesomeParser
     return true if string == "true"
     # Small workaround, since in the optional_arg_lookup the argument can't be nil
     return :nil if string == "nil" and convert_nil == true
-
-    # if @flags["matching"] == "list":
-    #   # Parse everything that is inside the list recursively calling parse_arguments
-    #   return parse_arguments([list_args*], @tmp_string)["list_args"]
     return string
   end
 
@@ -364,7 +361,44 @@ class JekyllAwesomeParser
   end
 
   # Check if user arg matches the developer specified type and throws an error in case it doesn't
-  def check_user_types()
+  def check_user_type()
+    check_int = /^[0-9]+$/
+    check_float = /^[0-9]+(\.[0-9]+)$/
+
+    full_arg = @clean_lookup[@current_arg] || @current_arg
+    arg_name = @dirty_lookup[@current_arg]
+    type_name = @type_lookup[full_arg] || @type_lookup[@current_arg]
+
+    user_type = convert_type(@tmp_string).class
+    # In case user_type is a quoted string
+    user_type = String if ["\"", "\'"].include? @flags["quote"]
+
+    # This function should behave a bit differently if its matching a list
+    user_type = Array if @matching_list == true
+    type_name = @actual_type_name if @actual_type_name != nil
+
+    # Don't bother if the type is not specified
+    return if type_name == nil
+
+    correct_type = {"str" => String, "num" => "a number", "list" => Array, "bool" => "a boolean"}[type_name]
+
+    raise_error = lambda do |extra_info=nil|
+      error_args = {"arg_name" => arg_name, "user_input" => @tmp_string, "correct_type" => correct_type,
+                    "wrong_type" => user_type, "full_arg" => full_arg, "additional_info" => extra_info}
+      raise_parser_type_error("wrong_type", error_args)
+    end
+
+    raise_error.call if type_name == "num" and !([Integer, Float].include? user_type)
+    raise_error.call if type_name == "str" and !(user_type == String)
+
+    if type_name == "list" and !(user_type == Array)
+      raise_error.call "'#{arg_name}' Probably needs to be [#{arg_name}]"
+    end
+
+    if type_name == "bool" and !([TrueClass, FalseClass].include? user_type)
+      raise_error.call "(In an additional note, if you just wanted to pass a string named '#{arg_name}',\n+"
+                        "put it in quotes (#{arg_name} -> \"#{arg_name}\"))"
+    end
   end
 
   # Close a positional argument, and adds it to parsed_result
@@ -378,6 +412,7 @@ class JekyllAwesomeParser
       argument = @tmp_string
     end
 
+    check_user_type()
     @parsed_result[@current_arg] += [argument]
     @tmp_string = ""
 
@@ -589,6 +624,15 @@ class JekyllAwesomeParser
         if @brackets_count["["] == @brackets_count["]"]
           # Yeah, creating additional copies of the parser isn't the best idea, I know
           tmp_parser = JekyllAwesomeParser.new
+
+          # Because the parser doesn't know it's parsing a list, and doesn't know the
+          # specified type, we need to tell it manually
+          full_arg = @clean_lookup[@current_arg] || @current_arg
+          type_name = @type_lookup[full_arg] || @type_lookup[@current_arg]
+
+          tmp_parser.instance_variable_set(:@matching_list, true)
+          tmp_parser.instance_variable_set(:@actual_type_name, type_name)
+
           parsed_list = tmp_parser.parse_arguments(["*list_arguments"], @tmp_string)
 
           @current_arg = @clean_lookup[@current_arg] if @clean_lookup.include?(@current_arg)

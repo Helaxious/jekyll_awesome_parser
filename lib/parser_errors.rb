@@ -164,10 +164,10 @@ module ParserTypeErrors
     raise_type_error(message, args, developer_error=true)
   end
 
-  def self.wrong_type(args)
+  def self.invalid_type(args)
     check_args_is_nil(args)
     type_name, number_note, type_list = args["type_name"], args["number_note"], args["type_list"]
-    message = "[Wrong Type] #{type_name} Is not a valid type. Maybe you mispelled?\n"
+    message = "[Invalid Type] #{type_name} Is not a valid type. Maybe you mispelled?\n"
     message += "(It was detected that you wanted to pass the type as an int/float.\n"+
                 "For simplicity, there is no differentiation between ints and floats.\n"+
                 "To pass a number type, use 'num' (eg: 'arg: num'). It will accept ints and floats.\n"+
@@ -215,5 +215,15 @@ module ParserTypeErrors
     message = "[Multiple Arguments] #{arg_name} has multiple arguments when it should only have one\n"+
               "In an additional note, you may have wanted to wrap the arguments in a list."
     raise_type_error(message, args, developer_error=true)
+  end
+
+  def self.wrong_type(args)
+    check_args_is_nil(args)
+    arg_name, user_input, correct_type = args["arg_name"], args["user_input"], args["correct_type"]
+    wrong_type = args["wrong_type"]
+
+    message = "[Wrong Type] Argument '#{arg_name}' (#{user_input}) should be #{correct_type}, not #{wrong_type}"
+    message += args["additional_info"] if args["additional_info"] != nil
+    raise_type_error(message, args, developer_error=false)
   end
 end
