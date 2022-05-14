@@ -38,7 +38,7 @@ class TestParser < Minitest::Test
       {"args" => ["cat"], "input" => "cat: orange_with_black_stripes",
       "result" => {"cat" => ["orange_with_black_stripes"]}, "exception" => nil},
 
-      # This somehow gives an error, I don't even know how
+      # This somehow gave an error, I don't even know how
       {"args" => ["*numbers"], "input" => "1 2 3",
       "result" => {"numbers" => [1, 2, 3]}, "exception" => nil},
 
