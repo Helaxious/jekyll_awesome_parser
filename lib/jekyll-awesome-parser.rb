@@ -2,6 +2,11 @@ require_relative "parser_errors.rb"
 
 class JekyllAwesomeParser
 
+  def initialize
+    @matching_list = nil
+    @actual_type_name = nil
+  end
+
   # Looks if there's an letter in a string in the left, or in the right of the pointer
   def peek(string, pointer, direction, target, stop=nil)
     stop = Array(stop) if stop.class == String
@@ -94,7 +99,7 @@ class JekyllAwesomeParser
   end
 
   def raise_parser_type_error(error, args=nil)
-    error_method = ParserTypeErrors.send(error, args)
+    ParserTypeErrors.send(error, args)
   end
 
   def validate_dev_args_type(arg, type_list)
@@ -244,8 +249,6 @@ class JekyllAwesomeParser
 
   # Validates the given method arguments by an developer. Since they are given as a string
   def validate_developer_arguments(args)
-    error_note = "(This is a developer error, this error should be fixed by the\n" +
-                "developers and not the user, if you're the user, contact the developers!)"
     type_list = ["num", "str", "list", "bool", "string", "boolean", "array"]
 
     if args.class != Array
@@ -362,9 +365,6 @@ class JekyllAwesomeParser
 
   # Check if user arg matches the developer specified type and throws an error in case it doesn't
   def check_user_type()
-    check_int = /^[0-9]+$/
-    check_float = /^[0-9]+(\.[0-9]+)$/
-
     full_arg = @clean_lookup[@current_arg] || @current_arg
     arg_name = @dirty_lookup[@current_arg]
     type_name = @type_lookup[full_arg] || @type_lookup[@current_arg]

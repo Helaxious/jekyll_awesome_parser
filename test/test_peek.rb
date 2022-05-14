@@ -36,7 +36,6 @@ class TestPeek < Minitest::Test
     [["abc  d  cba", 10, "left", "d", " "], [false, "stop", 7]]
     ]
     for (input, result) in tests
-      string, pointer, direction, target, stop = input
       self.assert_equal(@@parser.peek_until(*input), result)
     end
   end
@@ -52,7 +51,6 @@ class TestPeek < Minitest::Test
     [[" aaaaaaa ", 5, "left", "a"], [true, "match", 0]],
     ]
     for (input, result) in tests
-      string, pointer, direction, target, stop = input
       assert_equal(@@parser.peek_until_not(*input), result)
     end
   end
