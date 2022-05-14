@@ -122,6 +122,7 @@ class JekyllAwesomeParser
 
   # Parse through an optional argument string
   def parse_optional_argument(full_arg, arg_name)
+    brackets_count = {"[" => 0, "]" => 0}
     parsed_string = ""
     matching = [false, nil]
 
@@ -133,7 +134,42 @@ class JekyllAwesomeParser
         end
       end
 
-      if ["\"", "\'"].include? letter
+      if ["[", "]"].include?(letter) and matching[0] == false
+        if i != 0
+          raise_parser_type_error("multiple_arguments", {"arg_name" => full_arg})
+        end
+        if letter == "]"
+          raise_parser_type_error("unclosed_list", {"arg_name" => full_arg})
+        else
+          matching[0] = "list"
+          brackets_count["["] = 1
+          next
+        end
+      end
+
+      if matching[0] == "list"
+        if ["[", "]"].include?(letter)
+          brackets_count[letter] += 1
+        end
+        if brackets_count["["] == brackets_count["]"]
+          tmp_parser = JekyllAwesomeParser.new
+          parsed_list = tmp_parser.parse_arguments(["*list_arguments"], parsed_string)
+
+          if peek_until(arg_name, i-1, "right", ["[", "]"])[0] == true
+            raise_parser_type_error("unclosed_list", {"arg_name" => full_arg})
+          end
+          if i != arg_name.size - 1
+            raise_parser_type_error("multiple_arguments", {"arg_name" => full_arg})
+          end
+
+          return parsed_list["list_arguments"]
+        else
+          parsed_string += letter
+        end
+        next
+      end
+
+      if ["\"", "\'"].include? letter and matching[0] != "list"
         # If the quote is escaped, ignore it
         if peek(arg_name, i, "left", "\\")[1] == "match"
           parsed_string += letter
@@ -149,6 +185,11 @@ class JekyllAwesomeParser
       end
 
       if letter == " " and matching[0] == false
+        for letter in arg_name.split("").each
+          if ["[", "]"].include? letter
+            raise_parser_type_error("multiple_arguments", {"arg_name" => full_arg})
+          end
+        end
         raise_parser_type_error("optional_arg_with_space", {"arg_name" => full_arg})
       end
 
@@ -171,7 +212,7 @@ class JekyllAwesomeParser
         raise_parser_type_error("unclosed_string", {"arg_name" => full_arg})
       end
     end
-
+    raise_parser_type_error("unclosed_list", {"arg_name" => full_arg}) if matching[0] == "list"
     return parsed_string
   end
 
@@ -313,7 +354,9 @@ class JekyllAwesomeParser
   # Converts an optional argument, either converts the type, or parses a quoted string for errors
   def convert_optional_argument(full_arg, argument)
     # If the optional argument is enclosed between quotes:
-    if ["\"", "\'"].include?(argument[0]) and ["\"", "\'"].include?(argument[-1])
+    is_string = ["\"", "\'"].include?(argument[0]) and ["\"", "\'"].include?(argument[-1])
+    is_list = argument[0] == "[" and argument[-1] == "]"
+    if is_string or is_list
       return parse_optional_argument(full_arg, argument)
     else
       return convert_type(argument, convert_nil=true)

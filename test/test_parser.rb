@@ -464,6 +464,21 @@ class TestParser < Minitest::Test
       [["arg1  =  ni l: num"], "[Optional Argument With Space]"],
       [["arg1=  ni l: int"], "[Wrong Type]"],
 
+      [["arg1= ]"], "[Unclosed List]"],
+      [["arg1= ["], "[Unclosed List]"],
+      [["arg1= []]"], "[Unclosed List]"],
+      [["arg1= [[]"], "[Unclosed List]"],
+
+      [["arg1= ] : num"], "[Unclosed List]"],
+      [["arg1= [ : num"], "[Unclosed List]"],
+      [["arg1= []] : num"], "[Unclosed List]"],
+      [["arg1= [[] : num"], "[Unclosed List]"],
+
+      [["arg1= potato[]potato : num"], "[Multiple Arguments]"],
+      [["arg1= potato [] potato : num"], "[Multiple Arguments]"],
+      [["arg1= [] potato : num"], "[Multiple Arguments]"],
+      [["arg1= potato [] : num"], "[Multiple Arguments]"],
+
       [["arg1 = 'potatochips'"]],
       [["arg1 = \"potatochips\""]],
 
@@ -592,6 +607,23 @@ class TestParser < Minitest::Test
     "result": {"arg1" => ["something"], "arg2" => [123], "arg3" => [nil]}, "exception": nil},
     ]
     _test(tests, "test_keyword_defaults_arguments")
+  end
+
+  def test_keyword_default_arguments_lists
+    tests = [
+    {"args":["arg1=[this is a list]"], "input": "",
+    "result": {"arg1" => [["this", "is", "a", "list"]]}, "exception": nil},
+
+    {"args":["arg1=[1 2 3]"], "input": "",
+    "result": {"arg1" => [[1, 2, 3]]}, "exception": nil},
+
+    {"args":["arg1=nil", "arg2=  [1 2 3]"], "input": "",
+    "result": {"arg1" => [nil], "arg2" => [[1, 2, 3]]}, "exception": nil},
+
+    {"args":["arg1", "*arg2", "arg3=  [[[1 2 3]]]"], "input": "potato vinegar sauce",
+    "result": {"arg1" => ["potato"], "arg2" => ["vinegar", "sauce"], "arg3" => [[[[1, 2, 3]]]]}, "exception": nil},
+    ]
+    _test(tests, "test_default_arguments_lists")
   end
 
   def test_keyword_defaults_arguments_errors

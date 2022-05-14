@@ -88,7 +88,7 @@ def raise_type_error(message, args, developer_error=true)
     args["extra_info"].each { |info| message += "\n" + info}
   end
 
-  developer_note = "(This is a developer error, this error should be fixed by the\n" +
+  developer_note = "\n(This is a developer error, this error should be fixed by the\n" +
               "developers and not the user, if you're the user, contact the developers!)"
   message += developer_note if developer_error
   raise TypeError, message
@@ -171,7 +171,7 @@ module ParserTypeErrors
     message += "(It was detected that you wanted to pass the type as an int/float.\n"+
                 "For simplicity, there is no differentiation between ints and floats.\n"+
                 "To pass a number type, use 'num' (eg: 'arg: num'). It will accept ints and floats.\n"+
-                "And it will return either a int or a float.)" if number_note == true
+                "And it will return either a int or a float.)\n" if number_note == true
     message += "(All valid types: #{type_list})"
     raise_type_error(message, args, developer_error=true)
   end
@@ -187,7 +187,8 @@ module ParserTypeErrors
   def self.optional_arg_with_space(args)
     check_args_is_nil(args)
     arg_name = args["arg_name"]
-    message = "[Optional Argument With Space] #{arg_name} has a optional argument that should not have spaces."
+    message = "[Optional Argument With Space] #{arg_name} has a optional argument that should not have spaces.\n"+
+              "Maybe you tried to put multiple arguments?"
     raise_type_error(message, args, developer_error=true)
   end
 
@@ -197,6 +198,22 @@ module ParserTypeErrors
     message = "[Unclosed String] #{arg_name} has an unclosed quote, check if you accidentally have not\n"+
               "mixed single and double quotes, or maybe you forgot to escape a quote, or maybe you just\n"+
               "forgot to put a quote?"
+    raise_type_error(message, args, developer_error=true)
+  end
+
+  def self.unclosed_list(args)
+    check_args_is_nil(args)
+    arg_name = args["arg_name"]
+    message = "[Unclosed List] #{arg_name} has an unclosed list, check if you accidentally have not\n"+
+              "mixed the brackets"
+    raise_type_error(message, args, developer_error=true)
+  end
+
+  def self.multiple_arguments(args)
+    check_args_is_nil(args)
+    arg_name = args["arg_name"]
+    message = "[Multiple Arguments] #{arg_name} has multiple arguments when it should only have one\n"+
+              "In an additional note, you may have wanted to wrap the arguments in a list."
     raise_type_error(message, args, developer_error=true)
   end
 end
