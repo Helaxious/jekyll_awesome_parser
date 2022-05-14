@@ -17,6 +17,7 @@ class JekyllAwesomeParser
     end
 
     type_name = arg[(arg_type[2])..].strip
+    type_name = type_name[1..] if type_name[0] == ":"
     if !type_list.include? type_name
       number_note = ["int", "float", "integer"].include? type_name
       raise_parser_type_error("invalid_type", {"type_name" => type_name, "number_note" => number_note, "type_list" => type_list})
@@ -139,6 +140,8 @@ class JekyllAwesomeParser
     if colon_match
       colon_pos = colon_match[2]
     end
+
+    colon_pos -= 1 if arg[colon_pos] == ":"
 
     arg_name = arg[optional_arg_pos..colon_pos].strip
     parse_optional_argument(arg, arg_name)

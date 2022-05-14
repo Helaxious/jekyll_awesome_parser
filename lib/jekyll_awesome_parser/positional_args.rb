@@ -4,7 +4,8 @@ class JekyllAwesomeParser
     @current_arg = @clean_lookup[@current_arg] if @clean_lookup.include?(@current_arg)
     @tmp_string = @tmp_string.strip
 
-    if @convert_types
+    # If the parser is set to automatically convert types, or the argument is typed:
+    if @convert_types or @type_lookup[@current_arg]
       argument = convert_type(@tmp_string)
     else
       argument = @tmp_string

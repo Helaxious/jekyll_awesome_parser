@@ -40,12 +40,23 @@ class TestParser < Minitest::Test
     {"args":["arg1", "arg2", "arg3"], "input": "[1 2 3] [[1]] [false]",
     "result": {"arg1" => [[1, 2, 3]], "arg2" => [[[1]]], "arg3" => [[false]]}, "exception": nil},
     ]
-    _test(tests, "test_list_conversion")
+    _test(tests, "test_lists")
   end
 
   # Tests the parser option of automatically convert types
   def test_no_automatic_conversion()
-    skip
+    tests = [
+    {"args":["arg1", "arg2", "arg3"], "input": "123, false, \"potato\"",
+    "result": {"arg1" => ["123"], "arg2" => ["false"], "arg3" => ["potato"]}, "exception": nil},
+
+    {"args":["arg1", "arg2", "arg3"], "input": "123 [1, 2, 3] false",
+    "result": {"arg1" => ["123"], "arg2" => [["1", "2", "3"]], "arg3" => ["false"]}, "exception": nil},
+
+    {"args":["arg1: num", "arg2: list", "arg3: bool", "arg4: str"], "input": "123 [1, 2, 3] false aaa",
+    "result": {"arg1" => [123], "arg2" => [["1", "2", "3"]], "arg3" => [false], "arg4" => ["aaa"]},
+    "exception": nil},
+    ]
+    _test(tests, "test_no_automatic_conversion", false)
   end
 
   def test_typed_method_arguments_same_types()
@@ -68,7 +79,7 @@ class TestParser < Minitest::Test
     {"args":["recipe: list"], "input": "recipe: ['two eggs', 'one cup of flour', 'love']",
     "result": {"recipe" => [['two eggs', 'one cup of flour', 'love']]}, "exception": nil},
     ]
-    _test(tests, "test_typed_method_arguments_basic")
+    _test(tests, "test_typed_method_arguments_same_types")
   end
 
   def test_typed_method_arguments_different_types()
@@ -95,6 +106,41 @@ class TestParser < Minitest::Test
     [["*year: num"], "1 2 3 4 arg"],
     ]
     _test_wrong_type_errors(tests)
+  end
+
+  def test_type_star_args
+    tests = [
+    {"args":["*recipe: str"], "input": "recipe: 'flour' 'sugar' 'salt' 'chocolate'",
+    "result": {"recipe" => ["flour", "sugar", "salt", "chocolate"]}, "exception": nil},
+
+    {"args":["*true_or_false: bool"], "input": "false false true true false",
+    "result": {"true_or_false" => [false, false, true, true, false]}, "exception": nil},
+
+    {"args":["*true_or_false: num"], "input": "12 23 34 45 56",
+    "result": {"true_or_false" => [12, 23, 34, 45, 56]}, "exception": nil},
+
+    {"args":["*true_or_false: list"], "input": "[12] [23] [34] [45] [56]",
+    "result": {"true_or_false" => [[12], [23], [34], [45], [56]]}, "exception": nil},
+
+    {"args":["*recipe: str"], "input": "recipe: 'flour' 123 'salt' 'chocolate'",
+    "result": {"recipe" => nil}, "exception": TypeError},
+
+    {"args":["arg1", "*recipe: str", "something: list"], "input": "recipe: 'flour' 123 'salt' ['chocolate']",
+    "result": {"recipe" => nil}, "exception": TypeError},
+
+    {"args":["arg1", "*recipe: str", "something: list"], "input": "recipe: 'flour' 'salt' ['chocolate']",
+    "result": {"recipe" => nil}, "exception": TypeError},
+
+    {"args":["*true_or_false: bool"], "input": "false false 123 true false",
+    "result": {"true_or_false" => nil}, "exception": TypeError},
+
+    {"args":["*true_or_false: num"], "input": "112 5353 123 12 false",
+    "result": {"true_or_false" => nil}, "exception": TypeError},
+
+    {"args":["*true_or_false: list"], "input": "[1, 2, 3] [12] ['123'] 23",
+    "result": {"true_or_false" => nil}, "exception": TypeError},
+    ]
+    _test(tests, "test_type_star_args")
   end
 
   def test_validate_developer_arguments
@@ -146,6 +192,14 @@ class TestParser < Minitest::Test
       [["arg1= potato [] potato : num"], "[Multiple Arguments]"],
       [["arg1= [] potato : num"], "[Multiple Arguments]"],
       [["arg1= potato [] : num"], "[Multiple Arguments]"],
+
+      [["number=nil : num"]],
+      [["number=nil:num"]],
+      [["number = nil:num"]],
+      [["number =nil :num"]],
+      [["number =   nil: num"]],
+      [["number=   nil:num"]],
+      [["number       =   nil:num"]],
 
       [["arg1 = 'potatochips'"]],
       [["arg1 = \"potatochips\""]],

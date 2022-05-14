@@ -12,7 +12,7 @@ class JekyllAwesomeParser
     tmp_parser.instance_variable_set(:@matching_list, true)
     tmp_parser.instance_variable_set(:@actual_type_name, type_name)
 
-    parsed_list = tmp_parser.parse_arguments(["*list_arguments"], @tmp_string)
+    parsed_list = tmp_parser.parse_arguments(["*list_arguments"], @tmp_string, @convert_types)
 
     @current_arg = @clean_lookup[@current_arg] if @clean_lookup.include?(@current_arg)
     @parsed_result[@current_arg] += [parsed_list["list_arguments"]]

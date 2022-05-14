@@ -7,10 +7,11 @@ require_relative "test_cases/peek.rb"
 require_relative "test_cases/positional_arguments.rb"
 require_relative "test_cases/strings_and_etc.rb"
 require_relative "test_cases/types_and_method_arguments.rb"
+require_relative "test_cases/types_and_keyword_defaults.rb"
 
 class TestParser < Minitest::Test
   @@parser = JekyllAwesomeParser.new
-  @@display_errors = true
+  @@display_errors = false
 
   def _test(tests, title=nil, convert_types=true)
     parse = @@parser.method(:parse_arguments)

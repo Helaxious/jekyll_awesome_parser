@@ -22,6 +22,7 @@ class JekyllAwesomeParser
       key = key[1..-1] if key.include?("*")
       key = key[0...key.index("=")] if key.include?("=")
       key = key[0...key.index(":")] if key.include?(":")
+      key = key.strip
       clean_arguments[key] = value
     end
     return clean_arguments
@@ -99,6 +100,6 @@ class JekyllAwesomeParser
     raise_parser_error(pointer, "StringNotClosedError") if @flags["matching"] == "argument"
     raise_parser_error(pointer, "ListNotClosedError") if @flags["matching"] == "list"
     check_optional_args()
-    return clean_args(@parsed_result)
+    return clean_args(order_result(methods_args, @parsed_result))
   end
 end

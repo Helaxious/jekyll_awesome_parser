@@ -24,9 +24,9 @@ class JekyllAwesomeParser
       raise TypeError, "convert_types must be a boolean, not #{convert_types.class}"
     end
 
-    clean_args = clean_args(@method_args.map{|key|[key, []]}.to_h).keys()
-    @clean_lookup = clean_args.zip(@method_args).map{|clean, dirty|[clean, dirty]}.to_h
-    @dirty_lookup = clean_args.zip(@method_args).map{|clean, dirty|[dirty, clean]}.to_h
+    _clean_args = clean_args(@method_args.map{|key|[key, []]}.to_h).keys()
+    @clean_lookup = _clean_args.zip(@method_args).map{|clean, dirty|[clean, dirty]}.to_h
+    @dirty_lookup = _clean_args.zip(@method_args).map{|clean, dirty|[dirty, clean]}.to_h
 
     @tmp_string = ""
     @flags = {"matching" => nil, "quote" => nil}
