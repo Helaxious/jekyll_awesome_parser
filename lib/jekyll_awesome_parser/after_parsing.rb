@@ -16,4 +16,16 @@ class JekyllAwesomeParser
   def order_result(arguments, result)
     return arguments.map{|key|[key, result[key]]}.to_h
   end
+
+  # If the user passed nothing, check if every argument is optional, else throw an error
+  def check_empty_input(pointer, method_args, input)
+    return if input != "" or @matching_list != nil
+    for method in method_args
+      is_optional = false
+      for letter in method.split("")
+        is_optional = true if letter == "="
+      end
+      raise_parser_error(pointer, "NotEnoughArgumentsError") if is_optional == false
+    end
+  end
 end

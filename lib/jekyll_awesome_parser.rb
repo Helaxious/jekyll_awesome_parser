@@ -30,6 +30,7 @@ class JekyllAwesomeParser
 
   # Grabs a specified error from the ParserErrors module, grabs some debug info, then returns the error
   def raise_parser_error(pointer, error, args=nil)
+
     error = ParserErrors.const_get(error)
     raise error.new({"user_input":@user_input, "pointer":pointer}, args)
   end
@@ -39,6 +40,8 @@ class JekyllAwesomeParser
   end
 
   def parse_arguments(methods_args, input, convert_types=true)
+    check_empty_input(0, methods_args, input)
+    
     validate_developer_arguments(methods_args)
     init_variables(methods_args, input, convert_types)
 

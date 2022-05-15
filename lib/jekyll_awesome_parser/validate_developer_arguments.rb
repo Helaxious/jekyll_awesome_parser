@@ -57,6 +57,8 @@ class JekyllAwesomeParser
         end
         if brackets_count["["] == brackets_count["]"]
           tmp_parser = JekyllAwesomeParser.new
+
+          tmp_parser.instance_variable_set(:@matching_list, true)
           parsed_list = tmp_parser.parse_arguments(["*list_arguments"], parsed_string)
 
           if peek_until(arg_name, i-1, "right", ["[", "]"])[0] == true

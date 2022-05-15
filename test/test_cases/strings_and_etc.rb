@@ -138,22 +138,20 @@ class TestParser < Minitest::Test
   end
 
   def test_empty_strings()
-    skip
     tests = [
     {"args" => ["arg1"], "input": "''",
-    "result": {"arg1" => nil}, "exception": nil},
+    "result": {"arg1" => [""]}, "exception": nil},
     ]
     _test(tests, "test_developer_type_errors")
   end
 
   def test_empty_input()
-    skip
     tests = [
     {"args" => ["arg1"], "input": "",
-    "result": {"arg1" => nil}, "exception": nil},
+    "result": nil, "exception": ParserErrors::NotEnoughArgumentsError},
 
     {"args" => ["arg1=123", "arg2=312", "arg3"], "input": "",
-    "result": {"arg1" => nil}, "exception": nil},
+    "result": nil, "exception": ParserErrors::NotEnoughArgumentsError},
     ]
     _test(tests, "test_developer_type_errors")
   end
