@@ -36,6 +36,9 @@ class TestParser < Minitest::Test
 
     {"args":["arg1", "*lists = [123]: list", "arg3=nil"], "input": "potato [1] [\"abc\"] [[[false]]]",
     "result": {"arg1" => ["potato"], "lists" => [[1], ["abc"], [[[false]]]], "arg3" => [nil]}, "exception": nil},
+
+    {"args":["*quotes=nil: str", "*exclude=nil: str"], "input": "exclude: art",
+    "result": {"quotes" => [nil], "exclude" => ["art"]}, "exception": nil},
     ]
     _test(tests, "test_types_and_keyword_defaults")
   end

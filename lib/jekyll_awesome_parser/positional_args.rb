@@ -104,7 +104,7 @@ class JekyllAwesomeParser
 
     # If the current arg is a splat, and the next method argument is not optional, throw an error
     next_method_argument = @method_args[@method_args.index(@current_arg) + 1]
-    if (@current_arg[0] == "*") && !next_method_argument.include?("=")
+    if (@current_arg[0] == "*") && next_method_argument.class == String && !next_method_argument.include?("=")
       raise_parser_error(pointer, "MissingKeywordArgumentError")
     end
   end
