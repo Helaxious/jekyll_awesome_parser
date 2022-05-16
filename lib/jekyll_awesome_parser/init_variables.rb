@@ -8,9 +8,9 @@ class JekyllAwesomeParser
 
       next if !(arg.include? "=")
       if arg.include? ":"
-        @optional_arg_lookup[arg] = convert_optional_argument(arg, arg.split("=")[1].split(":")[0].strip)
+        @optional_arg_lookup[arg] = convert_optional_argument(method_args, arg, arg.split("=")[1].split(":")[0].strip)
       else
-        @optional_arg_lookup[arg] = convert_optional_argument(arg, arg.split("=")[1].strip)
+        @optional_arg_lookup[arg] = convert_optional_argument(method_args, arg, arg.split("=")[1].strip)
       end
     end
   end

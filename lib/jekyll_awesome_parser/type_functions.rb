@@ -15,19 +15,19 @@ class JekyllAwesomeParser
   end
 
   # Converts an optional argument, either converts the type, or parses a quoted string for errors
-  def convert_optional_argument(full_arg, argument)
+  def convert_optional_argument(arg_list, full_arg, argument)
     # If the optional argument is enclosed between quotes:
     is_string = ["\"", "\'"].include?(argument[0]) and ["\"", "\'"].include?(argument[-1])
     is_list = argument[0] == "[" and argument[-1] == "]"
     if is_string or is_list
-      return parse_optional_argument(full_arg, argument)
+      return parse_optional_argument(arg_list, full_arg, argument)
     else
       return convert_type(argument, convert_nil=true)
     end
   end
 
   # Check if user arg matches the developer specified type and throws an error in case it doesn't
-  def check_user_type()
+  def check_user_type(pointer)
     full_arg = @clean_lookup[@current_arg] || @current_arg
     arg_name = @dirty_lookup[@current_arg]
     type_name = @type_lookup[full_arg] || @type_lookup[@current_arg]
@@ -46,21 +46,36 @@ class JekyllAwesomeParser
     correct_type = {"str" => String, "num" => "a number", "list" => Array, "bool" => "a boolean"}[type_name]
 
     raise_error = lambda do |extra_info=nil|
-      error_args = {"arg_name" => arg_name, "user_input" => @tmp_string, "correct_type" => correct_type,
-                    "wrong_type" => user_type, "full_arg" => full_arg, "additional_info" => extra_info}
+      error_args = {"arg_name" => arg_name, "user_input" => @user_input, "correct_type" => correct_type,
+                    "wrong_type" => user_type, "full_arg" => full_arg, "additional_info" => extra_info,
+                    "pointer" => pointer, "clean_args" => @clean_lookup.keys, "method_args" => @method_args,
+                    "parsed_result" => clean_args(order_result(@method_args, @parsed_result)),
+                    "user_arg" => @tmp_string, "matching_list" => @matching_list}
+
       raise_parser_type_error("wrong_type", error_args)
     end
 
     raise_error.call if type_name == "num" and !([Integer, Float].include? user_type)
-    raise_error.call if type_name == "str" and !(user_type == String)
+    raise_error.call if type_name == "list" and !(user_type == Array)
 
-    if type_name == "list" and !(user_type == Array)
-      raise_error.call "'#{arg_name}' Probably needs to be [#{arg_name}]"
+    if type_name == "str" and !(user_type == String)
+      if [TrueClass, FalseClass].include? user_type
+        raise_error.call "(If you wanted to pass '#{@tmp_string}' as a string, you'll have to put it\n"+
+                        "between quotes (\"\" or ''))"
+      else
+        raise_error.call
+      end
     end
 
     if type_name == "bool" and !([TrueClass, FalseClass].include? user_type)
-      raise_error.call "(In an additional note, if you just wanted to pass a string named '#{arg_name}',\n+"
-                        "put it in quotes (#{arg_name} -> \"#{arg_name}\"))"
+      # If the user passed "true" or "false" as a string, show an note:
+      if user_type == String and (@tmp_string == "false" or @tmp_string == "true")
+        quoted_arg = {"\"" => "\"#{@tmp_string}\"", "\'" => "\'#{@tmp_string}\'"}[@flags["quote"]]
+        raise_error.call "(Side note, maybe you want to get rid of the quotes of the input?\n"+
+                          "#{quoted_arg} would be #{@tmp_string})"
+      else
+        raise_error.call
+      end
     end
   end
 end

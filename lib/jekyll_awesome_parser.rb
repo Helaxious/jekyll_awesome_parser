@@ -12,6 +12,12 @@ class JekyllAwesomeParser
   def initialize
     @matching_list = nil
     @actual_type_name = nil
+    @debug_context = nil # Jekyll specific debugging context
+  end
+
+  # Jekyll only method, it gets an object that contains some useful debugging context
+  def set_context(context)
+    @debug_context = context
   end
 
   # Gets the arg name from the methods arguments list (eg: "arg1=nil" becomes "arg1")
@@ -32,18 +38,21 @@ class JekyllAwesomeParser
   def raise_parser_error(pointer, error, args=nil)
 
     error = ParserErrors.const_get(error)
-    raise error.new({"user_input":@user_input, "pointer":pointer}, args)
+    raise error.new({"user_input": @user_input, "pointer": pointer, "method_args": @method_args,
+                    "clean_args": @clean_lookup.keys,
+                    "parsed_result": clean_args(order_result(@method_args, @parsed_result)),
+                    "matching_list": @matching_list}, args)
   end
 
   def raise_parser_type_error(error, args=nil)
-    ParserTypeErrors.send(error, args)
+    ParserTypeErrors.send(error, args.merge("matching_list" => @matching_list))
   end
 
   def parse_arguments(methods_args, input, convert_types=true)
-    check_empty_input(0, methods_args, input)
-    
     validate_developer_arguments(methods_args)
     init_variables(methods_args, input, convert_types)
+
+    check_empty_input(0, methods_args, input)
 
     for letter, pointer in @user_input.split("").each_with_index
       if ['"', "'"].include?(letter) and @flags["matching"] != "list"
@@ -85,7 +94,7 @@ class JekyllAwesomeParser
 
           # If the argument is one character length and it's the end of the user input
           if pointer == input.size - 1
-            close_argument()
+            close_argument(pointer)
             bump_current_arg(pointer, letter)
           end
 
