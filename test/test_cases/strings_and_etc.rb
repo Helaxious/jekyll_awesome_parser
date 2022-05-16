@@ -126,7 +126,7 @@ class TestParser < Minitest::Test
   def test_init_variables()
     method_args,input = [["*arg1", "arg2=None", "arg3"], "potato"]
     test_parser = JekyllAwesomeParser.new
-    test_parser.init_variables(method_args, input, false)
+    test_parser.init_variables(method_args, input, false, false)
 
     clean_lookup = test_parser.instance_variable_get(:@clean_lookup)
     dirty_lookup = test_parser.instance_variable_get(:@dirty_lookup)

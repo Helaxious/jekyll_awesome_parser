@@ -15,10 +15,11 @@ class JekyllAwesomeParser
     end
   end
 
-  def init_variables(method_args, user_input, convert_types)
+  def init_variables(method_args, user_input, convert_types, print_errors)
     @user_input = user_input
     @method_args = method_args
     @convert_types = convert_types
+    @print_errors = print_errors
 
     if ![true, false].include? convert_types
       raise TypeError, "convert_types must be a boolean, not #{convert_types.class}"

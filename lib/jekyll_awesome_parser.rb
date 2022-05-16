@@ -41,16 +41,16 @@ class JekyllAwesomeParser
     raise error.new({"user_input": @user_input, "pointer": pointer, "method_args": @method_args,
                     "clean_args": @clean_lookup.keys,
                     "parsed_result": clean_args(order_result(@method_args, @parsed_result)),
-                    "matching_list": @matching_list}, args, @debug_context)
+                    "matching_list": @matching_list}, args, @debug_context, @print_errors)
   end
 
   def raise_parser_type_error(error, args=nil)
-    ParserTypeErrors.send(error, args.merge("matching_list" => @matching_list), @debug_context)
+    ParserTypeErrors.send(error, args.merge("matching_list" => @matching_list), @debug_context, @print_errors)
   end
 
-  def parse_arguments(methods_args, input, convert_types=true)
+  def parse_arguments(methods_args, input, convert_types=true, print_errors=true)
     validate_developer_arguments(methods_args)
-    init_variables(methods_args, input, convert_types)
+    init_variables(methods_args, input, convert_types, print_errors)
 
     check_empty_input(0, methods_args, input)
 
