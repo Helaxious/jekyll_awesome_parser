@@ -41,11 +41,11 @@ class JekyllAwesomeParser
     raise error.new({"user_input": @user_input, "pointer": pointer, "method_args": @method_args,
                     "clean_args": @clean_lookup.keys,
                     "parsed_result": clean_args(order_result(@method_args, @parsed_result)),
-                    "matching_list": @matching_list}, args)
+                    "matching_list": @matching_list}, args, @debug_context)
   end
 
   def raise_parser_type_error(error, args=nil)
-    ParserTypeErrors.send(error, args.merge("matching_list" => @matching_list))
+    ParserTypeErrors.send(error, args.merge("matching_list" => @matching_list), @debug_context)
   end
 
   def parse_arguments(methods_args, input, convert_types=true)
