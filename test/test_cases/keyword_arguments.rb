@@ -19,15 +19,15 @@ class TestParser < Minitest::Test
   def test_keyword_arguments_and_star_args_exceptions()
     tests = [
       {"args" => ["*arg1", "*arg2"], "input" => "arg2: \"jokes\" \"games\" arg1: \"fun_facts\" \"web_dev\" arg3:",
-      "result" => nil, "exception" => ParserErrors::EmptyKeywordError},
+      "result" => nil, "exception" => get_parser_error("EmptyKeywordError")},
 
       {"args" => ["*arg1", "*arg2"], "input" => "arg2: \"jokes\" \"games\" arg1: \"fun_facts\" \"web_dev\" arg3:",
-      "result" => nil, "exception" => ParserErrors::EmptyKeywordError},
+      "result" => nil, "exception" => get_parser_error("EmptyKeywordError")},
 
-      {"args" => ["*arg1", "*arg2"], "input" => "arg2: \"jokes\" \"games\" arg1: \"fun_facts\" \"web_dev\" arg3: \"aaa\"", "result" => nil, "exception" => ParserErrors::UnexpectedKeywordError},
+      {"args" => ["*arg1", "*arg2"], "input" => "arg2: \"jokes\" \"games\" arg1: \"fun_facts\" \"web_dev\" arg3: \"aaa\"", "result" => nil, "exception" => get_parser_error("UnexpectedKeywordError")},
 
       {"args" => ["arg1"], "input" => "\"jokes\" include:",
-      "result" => nil, "exception" => ParserErrors::EmptyKeywordError}]
+      "result" => nil, "exception" => get_parser_error("EmptyKeywordError")}]
 
     _test(tests, "test_keyword_arguments_and_star_args_exceptions")
   end

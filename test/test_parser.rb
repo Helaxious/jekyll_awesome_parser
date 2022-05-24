@@ -12,6 +12,11 @@ require_relative "test_cases/types_and_keyword_defaults.rb"
 class TestParser < Minitest::Test
   @@parser = JekyllAwesomeParser.new
   @@display_errors = false
+  @@parser_errors = JekyllAwesomeParser::ParserErrors
+
+  def get_parser_error(error)
+    return JekyllAwesomeParser::ParserErrors.const_get(error)
+  end
 
   def _test(tests, title=nil, convert_types=true)
     parse = @@parser.method(:parse_arguments)

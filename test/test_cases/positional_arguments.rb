@@ -22,28 +22,28 @@ class TestParser < Minitest::Test
   def test_positional_arguments_and_star_args_exceptions()
     tests = [
       {"args" => ["arg1", "arg2", "arg3"], "input" => "\"jokes\" \"fun_facts\" \"games\"\"",
-      "result" => nil, "exception" => ParserErrors::StringNotClosedError},
+      "result" => nil, "exception" => get_parser_error("StringNotClosedError")},
 
       {"args" => ["arg1", "*arg2", "arg3"], "input" => "\"jokes\" \"fun_facts\" \"games\"",
-      "result" => nil, "exception" => ParserErrors::MissingKeywordArgumentError},
+      "result" => nil, "exception" => get_parser_error("MissingKeywordArgumentError")},
 
       {"args" => ["arg1"], "input" => "\\\"jokes\"",
-      "result" => nil, "exception" => ParserErrors::InvalidCharacterError},
+      "result" => nil, "exception" => get_parser_error("InvalidCharacterError")},
 
       {"args" => ["*arg1"], "input" => ": \"jokes\"",
-      "result" => nil, "exception" => ParserErrors::InvalidKeywordError},
+      "result" => nil, "exception" => get_parser_error("InvalidKeywordError")},
 
       {"args" => ["*arg1"], "input" => "aaa\\aaa: \"jokes\"",
-      "result" => nil, "exception" => ParserErrors::InvalidKeywordError},
+      "result" => nil, "exception" => get_parser_error("InvalidKeywordError")},
 
       {"args" => ["arg1"], "input" => "\"jokes\" \"fun_facts\"",
-      "result" => nil, "exception" => ParserErrors::TooMuchArgumentsError},
+      "result" => nil, "exception" => get_parser_error("TooMuchArgumentsError")},
 
       {"args" => ["arg1", "arg2"], "input" => "\"jokes\"",
-      "result" => nil, "exception" => ParserErrors::NotEnoughArgumentsError},
+      "result" => nil, "exception" => get_parser_error("NotEnoughArgumentsError")},
 
       {"args" => ["arg1", "arg2"], "input" => "\"jokes\" \"something else",
-      "result" => nil, "exception" => ParserErrors::StringNotClosedError}]
+      "result" => nil, "exception" => get_parser_error("StringNotClosedError")}]
     _test(tests, "test_positional_arguments_and_star_args_exceptions")
   end
   def test_mix_double_single_no_quotes_positional()

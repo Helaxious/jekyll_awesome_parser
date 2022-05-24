@@ -41,13 +41,13 @@ class TestParser < Minitest::Test
     "result": {"arg1" => [[1, 2, 3]], "arg2" => [[[1]]], "arg3" => [[false]]}, "exception": nil},
 
     {"args":["arg1", "arg2", "arg3"], "input": "[1 2 3] [[arg1: potato]] [false]",
-    "result": nil, "exception": ParserErrors::KeywordArgumentInListError},
+    "result": nil, "exception": get_parser_error("KeywordArgumentInListError")},
 
     {"args":["arg1", "arg2", "arg3"], "input": "[asdasdasdasdasdasdsad:] [[[arg1: potato]]] [aoisdaiosdm:]",
-    "result": nil, "exception": ParserErrors::KeywordArgumentInListError},
+    "result": nil, "exception": get_parser_error("KeywordArgumentInListError")},
 
     {"args":["arg1", "arg2", "arg3"], "input": "aaa aaa [asd:]",
-    "result": nil, "exception": ParserErrors::KeywordArgumentInListError},
+    "result": nil, "exception": get_parser_error("KeywordArgumentInListError")},
     ]
     _test(tests, "test_lists")
   end

@@ -67,7 +67,7 @@ class TestParser < Minitest::Test
 
     {"args":["arg1", "*arg2", "arg3=  [[[1 2 3]]]"], "input": "potato vinegar sauce",
     "result": {"arg1" => ["potato"], "arg2" => ["vinegar", "sauce"], "arg3" => [[[[1, 2, 3]]]]}, "exception": nil},
-    
+
     {"args":["arg1[this_isnt_allowed: aaaa]"], "input": "potato",
     "result": nil, "exception": TypeError},
 
@@ -83,7 +83,7 @@ class TestParser < Minitest::Test
   def test_keyword_defaults_arguments_errors
     tests = [
     {"args":["arg1=something", "arg2", "arg3"], "input": "super",
-    "result": nil, "exception": ParserErrors::NotEnoughArgumentsError},
+    "result": nil, "exception": get_parser_error("NotEnoughArgumentsError")},
     ]
     _test(tests, "test_keyword_defaults_arguments")
   end

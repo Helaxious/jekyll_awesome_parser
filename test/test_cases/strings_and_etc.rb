@@ -55,7 +55,7 @@ class TestParser < Minitest::Test
       "result" => {"cat" => ["japanese_bobtail", "maltese"]}, "exception" => nil},
 
       {"args" => ["cat"], "input" => "cat: orange_with_black_stripes\"",
-      "result" => nil, "exception" => ParserErrors::StringNotClosedError},
+      "result" => nil, "exception" => get_parser_error("StringNotClosedError")},
 
       {"args" => ["cat", "color"], "input" => "cat: orange_with_black_stripes color: orange",
       "result" => {"cat" => ["orange_with_black_stripes"], "color" => ["orange"]}, "exception" => nil},
@@ -101,14 +101,14 @@ class TestParser < Minitest::Test
     # It should only raise an error if only the surrounding quotes are missing
     tests = [
     {"args":["sentence"], "input": "sentence: \"He says, 'I hate peanuts'",
-    "result": nil, "exception": ParserErrors::StringNotClosedError},
+    "result": nil, "exception": get_parser_error("StringNotClosedError")},
 
     {"args":["sentence"], "input": 'sentence: \'She replies, "Do you mean the comic?"',
-    "result": nil, "exception": ParserErrors::StringNotClosedError},
+    "result": nil, "exception": get_parser_error("StringNotClosedError")},
 
     {"args":["sentence"],
     "input": "sentence: \"He replies, \\\"'Do you mean the comic?' No, the comic is kinda nice\\\"",
-    "result": nil, "exception": ParserErrors::StringNotClosedError},
+    "result": nil, "exception": get_parser_error("StringNotClosedError")},
     ]
     _test(tests, "test_mix_match_quotes_unclosed_string")
   end
@@ -148,10 +148,10 @@ class TestParser < Minitest::Test
   def test_empty_input()
     tests = [
     {"args" => ["arg1"], "input": "",
-    "result": nil, "exception": ParserErrors::NotEnoughArgumentsError},
+    "result": nil, "exception": get_parser_error("NotEnoughArgumentsError")},
 
     {"args" => ["arg1=123", "arg2=312", "arg3"], "input": "",
-    "result": nil, "exception": ParserErrors::NotEnoughArgumentsError},
+    "result": nil, "exception": get_parser_error("NotEnoughArgumentsError")},
     ]
     _test(tests, "test_developer_type_errors")
   end

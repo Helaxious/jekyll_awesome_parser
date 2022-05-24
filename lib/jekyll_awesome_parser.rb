@@ -104,7 +104,7 @@ class JekyllAwesomeParser
           if @matching_list == true
             raise_parser_error(pointer, "KeywordArgumentInListError")
           end
-          
+
           @flags["matching"] = "keyword"
           @tmp_string += letter
         end
