@@ -67,7 +67,7 @@ class JekyllAwesomeParser
       end
     end
 
-    if type_name == "bool" and !([TrueClass, FalseClass].include? user_type)
+    if ["bool", "boolean"].include? type_name and !([TrueClass, FalseClass].include? user_type)
       # If the user passed "true" or "false" as a string, show an note:
       if user_type == String and (@tmp_string == "false" or @tmp_string == "true")
         quoted_arg = {"\"" => "\"#{@tmp_string}\"", "\'" => "\'#{@tmp_string}\'"}[@flags["quote"]]

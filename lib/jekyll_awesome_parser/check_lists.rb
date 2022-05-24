@@ -1,6 +1,8 @@
 class JekyllAwesomeParser
   # Recursively calls parse_argument in the list match to parse inside of it
   def parse_list(pointer, letter)
+    # FIXME: Preciso fazer o parser dar erro se tiver keyword argument na lista
+
     # Yeah, creating additional copies of the parser isn't the best idea, I know
     tmp_parser = JekyllAwesomeParser.new
 

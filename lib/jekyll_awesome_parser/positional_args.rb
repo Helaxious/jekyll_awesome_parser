@@ -102,6 +102,8 @@ class JekyllAwesomeParser
     return if @arg_pointer == @method_args.size - 1
     return if peek_until_not(@user_input, pointer, "right", " ")[0] == true
 
+    # FIXME: This is not how it should check for optional arguments, there are no restrictions to specify a required argument after a optional one, instead, it should loop fowwards, starting from the current arguent position, and return an error if any argument is required
+
     # If the current arg is a splat, and the next method argument is not optional, throw an error
     next_method_argument = @method_args[@method_args.index(@current_arg) + 1]
     if (@current_arg[0] == "*") && next_method_argument.class == String && !next_method_argument.include?("=")

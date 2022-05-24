@@ -67,6 +67,15 @@ class TestParser < Minitest::Test
 
     {"args":["arg1", "*arg2", "arg3=  [[[1 2 3]]]"], "input": "potato vinegar sauce",
     "result": {"arg1" => ["potato"], "arg2" => ["vinegar", "sauce"], "arg3" => [[[[1, 2, 3]]]]}, "exception": nil},
+    
+    {"args":["arg1[this_isnt_allowed: aaaa]"], "input": "potato",
+    "result": nil, "exception": TypeError},
+
+    {"args":["arg1[this_isnt_allowed: [[[[aaaa]]]]]"], "input": "potato",
+    "result": nil, "exception": TypeError},
+
+    {"args":["arg1[[[[[[this_isnt_allowed:] aaaa]]]]"], "input": "potato",
+    "result": nil, "exception": TypeError},
     ]
     _test(tests, "test_default_arguments_lists")
   end

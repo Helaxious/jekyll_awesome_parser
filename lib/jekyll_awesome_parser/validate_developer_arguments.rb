@@ -172,6 +172,22 @@ class JekyllAwesomeParser
       end
 
       if arg.include? ":" # If there's a type in the arg
+        # Checks if the colon is inside a list, then it's a keyword argument not a type
+        brackets_count = {"[" => 0, "]" => 0}
+        colon_inside_list = false
+        for letter in arg.split("")
+          brackets_count[letter] += 1 if ["[", "]"].include? letter
+          opening, ending = brackets_count["["], brackets_count["]"]
+          raise_parser_type_error("unclosed_list", {"arg_list" => arg_list, "arg_name" => arg}) if ending > opening
+
+          # If the number of brackets are the same, the colon is inside a list
+          colon_inside_list = true if letter == ":" && opening != ending
+        end
+        raise_parser_type_error("unclosed_list", {"arg_list" => arg_list, "arg_name" => arg}) if opening != ending
+        # Raise the error after looping, because unclosed lists have a higher error priority
+        if colon_inside_list == true
+          raise_parser_type_error("keyword_argument_in_list", {"arg_list" => arg_list, "arg_name" => arg})
+        end
         validate_dev_args_type(arg_list, arg, type_list)
       end
 

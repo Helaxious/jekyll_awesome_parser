@@ -100,6 +100,11 @@ class JekyllAwesomeParser
 
         # Checking for a keyword argument
         else
+          # Keyword arguments don't make sense in lists, raise an error if there is one
+          if @matching_list == true
+            raise_parser_error(pointer, "KeywordArgumentInListError")
+          end
+          
           @flags["matching"] = "keyword"
           @tmp_string += letter
         end

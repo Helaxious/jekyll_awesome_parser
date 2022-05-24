@@ -98,8 +98,11 @@ module ParserErrors
     end
   end
   class MissingKeywordArgumentError < ParserError
+    # FIXME: this error only raises if the user needs to specify an argument after a star args, explain to the user this
+
     def initialize(info, args, debug_context, print_errors)
-      @message = "[Missing Keyword] One or more required keyword arguments were not given."
+      @message = "[Missing Keyword] You need to pass one or more keyword arguments (write the argument name with a colon before your arguent).\n"+
+                  "As one or more method arguments were specified as keyword-only arguments."
       super(info, args, debug_context, print_errors)
     end
   end
@@ -108,6 +111,12 @@ module ParserErrors
       @message = "[List Not Closed] It was detected an unclosed list! Maybe you forgot to close the list with ']'?\n"+
                   "(In an additional note, if you intended to use the brackets characters in\n"+
                   "a string, you'll need to put quotes ('' or \"\") in your string.)"
+      super(info, args, debug_context, print_errors)
+    end
+  end
+  class KeywordArgumentInListError < ParserError
+    def initialize(info, args, debug_context, print_errors)
+      @message = "[Keyword Arg in List] It was detected an keyword argument inside a list!"
       super(info, args, debug_context, print_errors)
     end
   end
@@ -230,6 +239,12 @@ module ParserTypeErrors
     check_args_is_nil(args)
     message = "[Unclosed List] Provided method argument '#{args['arg_name']}' in #{args['arg_list']} has an unclosed list.\n"+
               "Check if you accidentally have not mixed the brackets."
+    raise_type_error(message, args, debug_context, print_errors, developer_error=true)
+  end
+
+  def self.keyword_argument_in_list(args, debug_context, print_errors)
+    check_args_is_nil(args)
+    message = "[Keyword Arg in List] Provided method argument '#{args['arg_name']}' in #{args['arg_list']} has a keyword argument in a list!"
     raise_type_error(message, args, debug_context, print_errors, developer_error=true)
   end
 
