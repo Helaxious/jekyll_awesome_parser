@@ -19,7 +19,12 @@ class JekyllAwesomeParser
     @user_input = user_input
     @method_args = method_args
     @convert_types = convert_types
-    @print_errors = print_errors
+
+    if @deactivate_print_errors
+      @print_errors = false
+    else
+      @print_errors = print_errors
+    end
 
     ParserErrors.set_vars(@debug_context, @print_errors)
 

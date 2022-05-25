@@ -15,6 +15,10 @@ class JekyllAwesomeParser
     @debug_context = nil # Jekyll specific debugging context
   end
 
+  def deactivate_print_errors
+    @deactivate_print_errors = true
+  end
+
   # Jekyll only method, it gets an object that contains some useful debugging context
   def set_context(context)
     @debug_context = context
