@@ -59,9 +59,10 @@ class JekyllAwesomeParser
         end
         if brackets_count["["] == brackets_count["]"]
           tmp_parser = JekyllAwesomeParser.new
+          # @print_errors = @print_errors || false
 
           tmp_parser.instance_variable_set(:@matching_list, true)
-          parsed_list = tmp_parser.parse_arguments(["*list_arguments"], parsed_string)
+          parsed_list = tmp_parser.parse_arguments(["*list_arguments"], parsed_string, convert_types=@convert_types, print_errors=@print_errors)
 
           if peek_until(arg_name, i-1, "right", ["[", "]"])[0] == true
             raise_parser_type_error("unclosed_list", {"arg_list" => arg_list, "arg_name" => full_arg})

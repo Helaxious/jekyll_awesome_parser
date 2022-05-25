@@ -24,12 +24,12 @@ class TestParser < Minitest::Test
       args, input, result, exception = test.values
 
       if exception == nil
-        assert_equal(result, parse.call(args, input, convert_types))
+        assert_equal(result, parse.call(args, input, convert_types, false))
       else
-        assert_raises(exception) { parse.call(args, input, convert_types)}
+        assert_raises(exception) { parse.call(args, input, convert_types, print_errors=false)}
         if @@display_errors == true
           begin
-            parse.call(method_args=args, user_input=input, convert_types)
+            parse.call(args, input, convert_types, print_errors=false)
           rescue StandardError => func_exception
             puts "[#{title}]\n#{'='*25}\n[Test #{i} - Good Exception]"
             puts "#{'-'*15}\n#{func_exception}\n#{'-'*15}"
@@ -64,12 +64,12 @@ class TestParser < Minitest::Test
   def _test_wrong_type_errors(tests)
     for test, i in tests.each_with_index
       methods, input = test
-      func_message = assert_raises(TypeError) { @@parser.parse_arguments(methods, input) }
+      func_message = assert_raises(TypeError) { @@parser.parse_arguments(methods, input, print_errors=false) }
       assert(func_message.to_s.start_with?("[Wrong Type]"), "'#{func_message.to_s}' should start with [Wrong Type]")
 
       if @@display_errors == true
         begin
-          @@parser.parse_arguments(methods, input)
+          @@parser.parse_arguments(methods, input, print_errors=false)
         rescue TypeError => func_exception
           puts "#{'='*25}\n[Test #{i} - Good Exception]"
           puts "#{'-'*15}\n#{func_exception}\n#{'-'*15}"

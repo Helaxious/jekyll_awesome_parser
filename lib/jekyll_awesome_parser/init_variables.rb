@@ -21,8 +21,14 @@ class JekyllAwesomeParser
     @convert_types = convert_types
     @print_errors = print_errors
 
-    if ![true, false].include? convert_types
+    ParserErrors.set_vars(@debug_context, @print_errors)
+
+    if ![true, false].include? @convert_types
       raise TypeError, "convert_types must be a boolean, not #{convert_types.class}"
+    end
+
+    if ![true, false].include? @print_errors
+      raise TypeError, "print_errors must be a boolean, not #{print_errors.class}"
     end
 
     _clean_args = clean_args(@method_args.map{|key|[key, []]}.to_h).keys()
