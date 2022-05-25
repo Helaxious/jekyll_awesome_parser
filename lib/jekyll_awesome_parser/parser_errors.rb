@@ -115,8 +115,6 @@ class JekyllAwesomeParser
       end
     end
     class MissingKeywordArgumentError < ParserError
-      # FIXME: this error only raises if the user needs to specify an argument after a star args, explain to the user this
-
       def initialize(info, args)
         @message = "[Missing Keyword] You need to pass one or more keyword arguments (write the argument name with a colon before your arguent).\n"+
                     "As one or more method arguments were specified as keyword-only arguments."

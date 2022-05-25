@@ -27,6 +27,9 @@ class TestParser < Minitest::Test
       {"args" => ["arg1", "*arg2", "arg3"], "input" => "\"jokes\" \"fun_facts\" \"games\"",
       "result" => nil, "exception" => get_parser_error("MissingKeywordArgumentError")},
 
+      {"args" => ["arg1", "*arg2", "arg3=aaa", "arg4"], "input" => "\"jokes\" \"fun_facts\" \"games\"",
+      "result" => nil, "exception" => get_parser_error("MissingKeywordArgumentError")},
+
       {"args" => ["arg1"], "input" => "\\\"jokes\"",
       "result" => nil, "exception" => get_parser_error("InvalidCharacterError")},
 
