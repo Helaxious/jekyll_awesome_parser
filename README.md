@@ -1,5 +1,7 @@
 # Jekyll Awesome Parser
 
+![](robot_banner.png)
+
 ## What is jekyll-awesome-parser?
 
 jekyll-awesome-parser is a complete argument parser for Jekyll, packed with every feature you may (or may not) need.
