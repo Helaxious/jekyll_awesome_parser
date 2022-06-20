@@ -1,17 +1,17 @@
 class JekyllAwesomeParser
   def validate_keyword(letter, pointer, keyword)
     if peek_until_not(@user_input, pointer, "right", target=[" "])[1] == "no_match"
-      raise_parser_error(pointer, "EmptyKeywordError", {"extra_info": ["Empty Keyword: '#{keyword}'"]})
+      raise_parser_error(pointer, "EmptyKeywordError", { "extra_info": ["Empty Keyword: '#{keyword}'"] })
     end
-    if !@clean_lookup.include?(keyword)
-      raise_parser_error(pointer, "UnexpectedKeywordError", {"extra_info": ["Unexpected Keyword: '#{keyword}'"]})
+    unless @clean_lookup.include?(keyword)
+      raise_parser_error(pointer, "UnexpectedKeywordError", { "extra_info": ["Unexpected Keyword: '#{keyword}'"] })
     end
     dirty_keyword = @clean_lookup[keyword]
     if @parsed_result.include?(dirty_keyword) && !@parsed_result[dirty_keyword].empty?
-      raise_parser_error(pointer, "RepeatedKeywordError", {"extra_info": ["Repeated Keyword: '#{keyword}'"]})
+      raise_parser_error(pointer, "RepeatedKeywordError", { "extra_info": ["Repeated Keyword: '#{keyword}'"] })
     else
-      if !@parsed_result.include?(dirty_keyword)
-        raise_parser_error(pointer, "UnexpectedKeywordError", {"extra_info": ["Unexpected Keyword: '#{keyword}'"]})
+      unless @parsed_result.include?(dirty_keyword)
+        raise_parser_error(pointer, "UnexpectedKeywordError", { "extra_info": ["Unexpected Keyword: '#{keyword}'"] })
       end
     end
   end

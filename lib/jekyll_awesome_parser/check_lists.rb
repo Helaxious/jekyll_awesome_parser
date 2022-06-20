@@ -22,7 +22,7 @@ class JekyllAwesomeParser
     @parsed_result[@current_parameter] += [parsed_list["list_arguments"]]
     bump_current_parameter(pointer, letter)
 
-    @brackets_count = {"[" => 0, "]" => 0}
+    @brackets_count = { "[" => 0, "]" => 0 }
     @flags["matching"] = nil
     @tmp_string = ""
   end

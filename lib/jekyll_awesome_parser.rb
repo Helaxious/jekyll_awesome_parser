@@ -1,12 +1,12 @@
-require_relative "jekyll_awesome_parser/after_parsing.rb"
-require_relative "jekyll_awesome_parser/check_lists.rb"
-require_relative "jekyll_awesome_parser/init_variables.rb"
-require_relative "jekyll_awesome_parser/keyword_arguments.rb"
-require_relative "jekyll_awesome_parser/parser_errors.rb"
-require_relative "jekyll_awesome_parser/peek_functions.rb"
-require_relative "jekyll_awesome_parser/positional_args.rb"
-require_relative "jekyll_awesome_parser/type_functions.rb"
-require_relative "jekyll_awesome_parser/validate_parameters.rb"
+require_relative "jekyll_awesome_parser/after_parsing"
+require_relative "jekyll_awesome_parser/check_lists"
+require_relative "jekyll_awesome_parser/init_variables"
+require_relative "jekyll_awesome_parser/keyword_arguments"
+require_relative "jekyll_awesome_parser/parser_errors"
+require_relative "jekyll_awesome_parser/peek_functions"
+require_relative "jekyll_awesome_parser/positional_args"
+require_relative "jekyll_awesome_parser/type_functions"
+require_relative "jekyll_awesome_parser/validate_parameters"
 
 class JekyllAwesomeParser
   def initialize
@@ -45,10 +45,10 @@ class JekyllAwesomeParser
   def raise_parser_error(pointer, error, args=nil)
 
     error = ParserErrors.const_get(error)
-    raise error.new({"user_input": @user_input, "pointer": pointer, "parameters": @parameters,
+    raise error.new({ "user_input": @user_input, "pointer": pointer, "parameters": @parameters,
                     "clean_parameters": @clean_lookup.keys,
                     "parsed_result": clean_parameters(order_result(@parameters, @parsed_result)),
-                    "matching_list": @matching_list}, args)
+                    "matching_list": @matching_list }, args)
   end
 
   def raise_parser_type_error(error, args=nil)

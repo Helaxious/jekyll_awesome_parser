@@ -43,14 +43,14 @@ class JekyllAwesomeParser
     # Don't bother if the type is not specified
     return if type_name == nil
 
-    correct_type = {"str" => String, "num" => "a number", "list" => Array, "bool" => "a boolean"}[type_name]
+    correct_type = { "str" => String, "num" => "a number", "list" => Array, "bool" => "a boolean" }[type_name]
 
     raise_error = lambda do |extra_info=nil|
-      error_args = {"parameter_name" => parameter_name, "user_input" => @user_input, "correct_type" => correct_type,
+      error_args = { "parameter_name" => parameter_name, "user_input" => @user_input, "correct_type" => correct_type,
                     "wrong_type" => user_type, "full_parameter" => full_parameter, "additional_info" => extra_info,
                     "pointer" => pointer, "clean_parameters" => @clean_lookup.keys, "parameters" => @parameters,
                     "parsed_result" => clean_parameters(order_result(@parameters, @parsed_result)),
-                    "user_arg" => @tmp_string, "matching_list" => @matching_list}
+                    "user_arg" => @tmp_string, "matching_list" => @matching_list }
 
       raise_parser_type_error("wrong_type", error_args)
     end
@@ -70,7 +70,7 @@ class JekyllAwesomeParser
     if ["bool", "boolean"].include? type_name and !([TrueClass, FalseClass].include? user_type)
       # If the user passed "true" or "false" as a string, show an note:
       if user_type == String and (@tmp_string == "true" or @tmp_string == "false")
-        quoted_arg = {"\"" => "\"#{@tmp_string}\"", "\'" => "\'#{@tmp_string}\'"}[@flags["quote"]]
+        quoted_arg = { "\"" => "\"#{@tmp_string}\"", "\'" => "\'#{@tmp_string}\'" }[@flags["quote"]]
         raise_error.call "(Side note, maybe you want to get rid of the quotes of the input?\n"+
                           "#{quoted_arg} would be #{@tmp_string})"
       else

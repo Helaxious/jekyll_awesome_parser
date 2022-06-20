@@ -1,12 +1,12 @@
 require "minitest/autorun"
-require_relative "../lib/jekyll_awesome_parser.rb"
-require_relative "test_cases/keyword_arguments.rb"
-require_relative "test_cases/keyword_defaults.rb"
-require_relative "test_cases/peek.rb"
-require_relative "test_cases/positional_arguments.rb"
-require_relative "test_cases/strings_and_etc.rb"
-require_relative "test_cases/types_and_parameters.rb"
-require_relative "test_cases/types_and_keyword_defaults.rb"
+require_relative "../lib/jekyll_awesome_parser"
+require_relative "test_cases/keyword_arguments"
+require_relative "test_cases/keyword_defaults"
+require_relative "test_cases/peek"
+require_relative "test_cases/positional_arguments"
+require_relative "test_cases/strings_and_etc"
+require_relative "test_cases/types_and_parameters"
+require_relative "test_cases/types_and_keyword_defaults"
 
 class TestParser < Minitest::Test
   @@parser = JekyllAwesomeParser.new

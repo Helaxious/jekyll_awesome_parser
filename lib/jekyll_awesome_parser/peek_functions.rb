@@ -4,7 +4,7 @@ class JekyllAwesomeParser
     stop = Array(stop) if stop.class == String
     target = Array(target) if target.class == String
 
-    direction = ({"left" => -1, "right" => 1})[direction]
+    direction = ({ "left" => -1, "right" => 1 })[direction]
     if (0 <= pointer + direction) and (pointer + direction <= string.size - 1)
       if target.include?(string[pointer + direction])
         return [true, "match", pointer + direction]
@@ -19,7 +19,7 @@ class JekyllAwesomeParser
 
   # Peeks continuously in one direction, and returns True if it eventually matches
   def peek_until(string, pointer, direction, target, stop=nil)
-    pointer_direction = ({"left" => -1, "right" => 1})[direction]
+    pointer_direction = ({ "left" => -1, "right" => 1 })[direction]
     peek_pointer = pointer
     while true
       peek_pointer += pointer_direction
@@ -32,7 +32,7 @@ class JekyllAwesomeParser
 
   # Returns True if the peek_until eventually doesn't match
   def peek_until_not(string, pointer, direction, target)
-    pointer_direction = ({"left" => -1, "right" => 1})[direction]
+    pointer_direction = ({ "left" => -1, "right" => 1 })[direction]
     peek_pointer = pointer
     while true
       peek_pointer += pointer_direction

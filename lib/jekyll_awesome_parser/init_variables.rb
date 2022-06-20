@@ -6,7 +6,7 @@ class JekyllAwesomeParser
     for parameter in parameters
       @type_lookup[parameter] = parameter.split(":")[1].strip if parameter.include? ":"
 
-      next if !(parameter.include? "=")
+      next unless (parameter.include? "=")
       if parameter.include? ":"
         @optional_arg_lookup[parameter] = convert_optional_argument(parameters,
                                             parameter, parameter.split("=")[1].split(":")[0].strip)
@@ -35,11 +35,11 @@ class JekyllAwesomeParser
     @dirty_lookup = _clean_parameters.zip(@parameters).map{|clean, dirty|[dirty, clean]}.to_h
 
     @tmp_string = ""
-    @flags = {"matching" => nil, "quote" => nil}
+    @flags = { "matching" => nil, "quote" => nil }
     @current_parameter = @parameters[0]
     @arg_pointer = 0
     @parsed_result = @parameters.map{|key|[key, []]}.to_h
-    @brackets_count = {"[" => 0, "]" => 0}
+    @brackets_count = { "[" => 0, "]" => 0 }
 
     init_optional_arg_and_type_lookup(parameters)
   end

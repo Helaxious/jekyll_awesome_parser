@@ -1,5 +1,5 @@
 class TestParser < Minitest::Test
-  def test_peek()
+  def test_peek
     tests = [
     [["abcdcba", 2, "right", "d", ""],  [true, "match", 3]],
     [["abcdcba", 4, "left", "d", ""],   [true, "match", 3]],
@@ -19,7 +19,7 @@ class TestParser < Minitest::Test
     end
   end
 
-  def test_peek_until()
+  def test_peek_until
     tests = [
     [["abcdcba", 0, "right", "d", ""], [true, "match", 3]],
     [["abcdcba", 0, "right", "", ""], [false, "end_of_string", 6]],
@@ -35,7 +35,7 @@ class TestParser < Minitest::Test
     end
   end
 
-  def test_peek_until_not()
+  def test_peek_until_not
     tests = [
     [["       potato", 0, "right", " "], [true, "match", 7]],
     [[" a      ", 1, "right", " "], [false, "no_match", 8]],
@@ -50,7 +50,7 @@ class TestParser < Minitest::Test
     end
   end
 
-  def test_peek_after()
+  def test_peek_after
     tests = [
     [[" aaaaaaa ", 0, "right", " ", "a"],  [false, "no_match", 0]],
     [["  aaaaaaa ", 0, "right", " ", "a"], [true, "match", 2]],
