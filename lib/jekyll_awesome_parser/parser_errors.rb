@@ -1,13 +1,13 @@
 def get_debug_info(info, args)
   message = ["User Input: #{info[:user_input]}", (" " * (info[:pointer] + 12)) + "^",
-  "Argument Names: #{info[:clean_args]}"].join("\n")
+  "Argument Names: #{info[:clean_parameters]}"].join("\n")
 
   if args != nil and args[:extra_info]
     args[:extra_info].each { |info| message += "\n" + info}
   end
 
   message += ["\n\n[Info]",
-  "Method Arguments: #{info[:method_args]}","Parsed Result: #{info[:parsed_result]}"].join("\n")
+  "parameters: #{info[:parameters]}","Parsed Result: #{info[:parsed_result]}"].join("\n")
 
   # FIXME
   if info[:matching_list] != nil
@@ -91,13 +91,13 @@ class JekyllAwesomeParser
     end
     class TooMuchArgumentsError < ParserError
       def initialize(info, args)
-        @message = "[Too Much Arguments] It was given more arguments than specified in the method arguments!"
+        @message = "[Too Much Arguments] It was given more arguments than specified in the parameters!"
         super(info, args)
       end
     end
     class NotEnoughArgumentsError < ParserError
       def initialize(info, args)
-        @message = "[Not Enough Arguments] It was given less arguments than specified in the method arguments!"
+        @message = "[Not Enough Arguments] It was given less arguments than specified in the parameters!"
         super(info, args)
       end
     end
@@ -109,7 +109,7 @@ class JekyllAwesomeParser
     end
     class UnexpectedKeywordError < ParserError
       def initialize(info, args)
-        @message = "[Unexpected Keyword] It was given a keyword that was not specified in the method arguments!\n"+
+        @message = "[Unexpected Keyword] It was given a keyword that was not specified in the parameters!\n"+
                     "Maybe you accidentally put a colon in a string?"
         super(info, args)
       end
@@ -117,7 +117,7 @@ class JekyllAwesomeParser
     class MissingKeywordArgumentError < ParserError
       def initialize(info, args)
         @message = "[Missing Keyword] You need to pass one or more keyword arguments (write the argument name with a colon before your arguent).\n"+
-                    "As one or more method arguments were specified as keyword-only arguments."
+                    "As one or more parameters were specified as keyword-only arguments."
         super(info, args)
       end
     end
@@ -140,7 +140,7 @@ class JekyllAwesomeParser
   module ParserTypeErrors
     def self.check_args_is_nil(args)
       if args == nil
-        raise TypeError, "'args' can't be empty, please fill it with the correct methods arguments\n."
+        raise TypeError, "'args' can't be empty, please fill it with the correct parameters\n."
       end
     end
 
@@ -164,60 +164,60 @@ class JekyllAwesomeParser
       raise TypeError, message
     end
 
-    def self.empty_argument(args)
+    def self.empty_parameter(args)
       check_args_is_nil(args)
-      message = "[Empty Argument] One or more provided method arguments in #{args['arg_list']} are empty strings."
+      message = "[Empty Parameter] One or more provided parameters in #{args['parameters']} are empty strings."
       raise_type_error(message, args, developer_error=true)
     end
 
-    def self.wrong_argument_type(args)
+    def self.wrong_parameter_type(args)
       check_args_is_nil(args)
-      message = "[Wrong Arg Type] Provided method argument '#{args['arg_name']}' in #{args['arg_list']} is #{args['arg_type']} when it should be String."
+      message = "[Wrong Parameter Type] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} is #{args['parameter_type']} when it should be String."
       raise_type_error(message, args, developer_error=true)
     end
 
-    def self.arg_starts_with_number(args)
+    def self.parameter_starts_with_number(args)
       check_args_is_nil(args)
-      message = "[Argument Starts With Number] Provided method argument '#{args['arg_name']}' in #{args["arg_list"]} starts with a number.\n"+
+      message = "[Parameter Starts With Number] Provided parameter '#{args['parameter_name']}' in #{args["parameters"]} starts with a number.\n"+
                 "(Ruby doesn't allow variables that starts with a number :p)"
 
       raise_type_error(message, args, developer_error=true)
     end
 
-    def self.wrong_arg_list_type(args)
+    def self.wrong_parameters_type(args)
       check_args_is_nil(args)
-      message = "[Wrong Arg Type] Provided method argument list '#{args['args']}' is a #{args['arg_type']} when it should be an Array"
+      message = "[Wrong Parameter Type] Provided parameter list '#{args['parameters']}' is a #{args['parameter_type']} when it should be an Array."
       raise_type_error(message, args, developer_error=true)
     end
 
-    def self.arg_name_with_space(args)
+    def self.parameter_name_with_space(args)
       check_args_is_nil(args)
-      message = "[Argument Name With Space] Provided method argument '#{args["arg_name"]}' in #{args["arg_list"]} has an argument name that should not have spaces."
+      message = "[Parameter Name With Space] Provided parameter '#{args["parameter_name"]}' in #{args["parameters"]} has an parameter name that should not have spaces."
       raise_type_error(message, args, developer_error=true)
     end
 
     def self.type_name_with_space(args)
       check_args_is_nil(args)
-      message = "[Type Name With Space] Provided method argument '#{args["arg_name"]}' in #{args["arg_list"]} has a type that should not have spaces."
+      message = "[Type Name With Space] Provided parameter '#{args["parameter_name"]}' in #{args["parameters"]} has a type that should not have spaces."
       raise_type_error(message, args, developer_error=true)
     end
 
     def self.empty_type(args)
       check_args_is_nil(args)
-      message = "[Empty Type] Provided method argument '#{args["arg_name"]}' in #{args["arg_list"]} has an empty type (nothing was detected past the ':')."
+      message = "[Empty Type] Provided parameter '#{args["parameter_name"]}' in #{args["parameters"]} has an empty type (nothing was detected past the ':')."
       raise_type_error(message, args, developer_error=true)
     end
 
     def self.optional_arg_after_type(args)
       check_args_is_nil(args)
-      message = "[Optional Argument After Type] Provided method argument '#{args["arg_name"]}' in #{args["arg_list"]} has an optional arg (also known as 'keyword default')\n"+
+      message = "[Optional Argument After Type] Provided parameter '#{args["parameter_name"]}' in #{args["parameters"]} has an optional arg (also known as 'keyword default')\n"+
                 "after a type. (a '=' was detected after a ':')"
       raise_type_error(message, args, developer_error=true)
     end
 
     def self.invalid_type(args)
       check_args_is_nil(args)
-      message = "[Invalid Type] Provided method argument '#{args["arg_name"]}' in #{args["arg_list"]} has type '#{args["type_name"]}', which is not a valid type. Maybe you mispelled it?\n\n"
+      message = "[Invalid Type] Provided parameter '#{args["parameter_name"]}' in #{args["parameters"]} has type '#{args["type_name"]}', which is not a valid type. Maybe you mispelled it?\n\n"
 
       message += "(It was detected that you wanted to pass the type as an int/float.\n"+
                   "For simplicity, there is no differentiation between ints and floats.\n"+
@@ -229,22 +229,21 @@ class JekyllAwesomeParser
 
     def self.empty_optional_arg(args)
       check_args_is_nil(args)
-      message = "[Empty Optional Argument] Provided method argument '#{args["arg_name"]}' in #{args["arg_list"]} has an empty optional argument\n"+
+      message = "[Empty Optional Argument] Provided parameter '#{args["parameter_name"]}' in #{args["parameters"]} has an empty optional argument\n"+
                 "(nothing was detected past the '=')"
       raise_type_error(message, args, developer_error=true)
     end
 
     def self.optional_arg_with_space(args)
       check_args_is_nil(args)
-      arg_name = args["arg_name"]
-      message = "[Optional Argument With Space] Provided method argument '#{args["arg_name"]}' in #{args["arg_list"]} has an optional argument with spaces.\n"+
-                "Maybe you tried to pass multiple arguments?"
+      message = "[Optional Argument With Space] Provided parameter '#{args["parameter_name"]}' in #{args["parameters"]} has an optional argument with spaces.\n"+
+                "Maybe you tried to pass multiple parameters?"
       raise_type_error(message, args, developer_error=true)
     end
 
     def self.unclosed_string(args)
       check_args_is_nil(args)
-      message = "[Unclosed String] Provided method argument '#{args['arg_name']}' in #{args['arg_list']} has an unclosed quote.\n"+
+      message = "[Unclosed String] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} has an unclosed quote.\n"+
                 "Check if you accidentally have not mixed single and double quotes,\n"+
                 "or maybe you forgot to escape a quote, or maybe you just forgot to put a quote?"
       raise_type_error(message, args, developer_error=true)
@@ -252,20 +251,20 @@ class JekyllAwesomeParser
 
     def self.unclosed_list(args)
       check_args_is_nil(args)
-      message = "[Unclosed List] Provided method argument '#{args['arg_name']}' in #{args['arg_list']} has an unclosed list.\n"+
+      message = "[Unclosed List] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} has an unclosed list.\n"+
                 "Check if you accidentally have not mixed the brackets."
       raise_type_error(message, args, developer_error=true)
     end
 
     def self.keyword_argument_in_list(args)
       check_args_is_nil(args)
-      message = "[Keyword Arg in List] Provided method argument '#{args['arg_name']}' in #{args['arg_list']} has a keyword argument in a list!"
+      message = "[Keyword Arg in List] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} has a keyword argument in a list!"
       raise_type_error(message, args, developer_error=true)
     end
 
     def self.multiple_arguments(args)
       check_args_is_nil(args)
-      message = "[Multiple Arguments] Provided method argument '#{args['arg_name']}' in #{args['arg_list']} has multiple arguments, when it should only have one.\n"+
+      message = "[Multiple Arguments] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} has multiple arguments, when it should only have one.\n"+
                 "In an additional note, you may have wanted to wrap the arguments in a list."
       raise_type_error(message, args, developer_error=true)
     end
@@ -273,20 +272,20 @@ class JekyllAwesomeParser
     def self.wrong_type(args)
       check_args_is_nil(args)
       arg_name, user_input, correct_type = args["arg_name"], args["user_input"], args["correct_type"]
-      wrong_type, pointer, clean_args = args["wrong_type"], args["pointer"], args["clean_args"]
-      method_args, parsed_result, user_arg = args["method_args"], args["parsed_result"], args["user_arg"]
+      wrong_type, pointer, clean_parameters = args["wrong_type"], args["pointer"], args["clean_parameters"]
+      parameters, parsed_result, user_arg = args["parameters"], args["parsed_result"], args["user_arg"]
 
       message = "[Wrong Type] Argument '#{arg_name}' (which was provided as '#{user_arg}') should be #{correct_type}, not #{wrong_type}\n"+
                 "User Input: #{user_input}\n"+
                 "#{(" " * (pointer + 12)) + "^\n"}"+
-                "Argument Names: #{clean_args}"
+                "Argument Names: #{clean_parameters}"
 
       if args != nil and args["additional_info"]
         message += "\n" + args["additional_info"]
       end
 
       message += ["\n\n[Info]",
-      "Method Arguments: #{method_args}","Parsed Result: #{parsed_result}"].join("\n")
+      "parameters: #{parameters}","Parsed Result: #{parsed_result}"].join("\n")
 
       # FIXME
       if args["matching_list"] != nil

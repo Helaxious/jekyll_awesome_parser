@@ -33,10 +33,10 @@ class JekyllAwesomeParser
         @arg_pointer += 1
       end
 
-      @current_arg = @dirty_lookup[@current_arg] if @dirty_lookup.include?(@current_arg)
+      @current_parameter = @dirty_lookup[@current_parameter] if @dirty_lookup.include?(@current_parameter)
 
       @flags["matching"] = nil
-      @current_arg = keyword
+      @current_parameter = keyword
       @tmp_string = ""
     end
   end

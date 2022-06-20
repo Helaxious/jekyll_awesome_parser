@@ -38,7 +38,7 @@ class TestParser < Minitest::Test
       {"args" => ["cat"], "input" => "cat: orange_with_black_stripes",
       "result" => {"cat" => ["orange_with_black_stripes"]}, "exception" => nil},
 
-      # This somehow gave an error, I don't even know how
+      # These two cases somehow gave an error, I don't even know how
       {"args" => ["*numbers"], "input" => "1 2 3",
       "result" => {"numbers" => [1, 2, 3]}, "exception" => nil},
 
@@ -113,20 +113,20 @@ class TestParser < Minitest::Test
     _test(tests, "test_mix_match_quotes_unclosed_string")
   end
 
-  def test_clean_args()
+  def test_clean_parameters()
     tests = [
     [{"arg1" => 1, "arg2" => 3}, {"arg1" => 1, "arg2" => 3}],
     [{"arg1=None" => 1, "*arg2" => 3}, {"arg1" => 1, "arg2" => 3}]
     ]
     for (input, result) in tests
-      assert_equal(@@parser.clean_args(input), result)
+      assert_equal(@@parser.clean_parameters(input), result)
     end
   end
 
   def test_init_variables()
-    method_args,input = [["*arg1", "arg2=None", "arg3"], "potato"]
+    parameters,input = [["*arg1", "arg2=None", "arg3"], "potato"]
     test_parser = JekyllAwesomeParser.new
-    test_parser.init_variables(method_args, input, false, false)
+    test_parser.init_variables(parameters, input, false, false)
 
     clean_lookup = test_parser.instance_variable_get(:@clean_lookup)
     dirty_lookup = test_parser.instance_variable_get(:@dirty_lookup)

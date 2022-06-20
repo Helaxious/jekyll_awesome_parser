@@ -1,18 +1,18 @@
 class JekyllAwesomeParser
   # Close a positional argument, and adds it to parsed_result
   def close_argument(pointer)
-    @current_arg = @clean_lookup[@current_arg] if @clean_lookup.include?(@current_arg)
+    @current_parameter = @clean_lookup[@current_parameter] if @clean_lookup.include?(@current_parameter)
     @tmp_string = @tmp_string.strip
 
-    # If the parser is set to automatically convert types, or the argument is typed:
-    if @convert_types or @type_lookup[@current_arg]
+    # If the parser is set to automatically convert types, or the parameter has a type:
+    if @convert_types or @type_lookup[@current_parameter]
       argument = convert_type(@tmp_string)
     else
       argument = @tmp_string
     end
 
     check_user_type(pointer)
-    @parsed_result[@current_arg] += [argument]
+    @parsed_result[@current_parameter] += [argument]
     @tmp_string = ""
 
     @flags["matching"], @flags["quote"] = [nil, nil]
@@ -61,8 +61,8 @@ class JekyllAwesomeParser
     return false
   end
 
-  # Bumps current_arg to the next argument in the methods arguments list, and does error checking too
-  def bump_current_arg(pointer, letter)
+  # Bumps current parameter to the next parameter in the parameters list, and does error checking too
+  def bump_current_parameter(pointer, letter)
     check_remaining_quote_args = lambda do
       return peek_until(@user_input, pointer, "right", ["\"", "'"])[1] == "match"
     end
@@ -70,7 +70,7 @@ class JekyllAwesomeParser
       return peek_after(@user_input, pointer, "right", [" ", ","], ['"',"'"])[0] || peek(@user_input, pointer, "right", ["\"", "'"])[0]
     end
 
-    # Gets every incomplete method argument, and checks if every one is optional
+    # Gets every incomplete parameters, and checks if every one is optional
     check_every_optional_args = lambda do
       for k, v in @parsed_result
         if v == []
@@ -80,32 +80,32 @@ class JekyllAwesomeParser
       return true
     end
 
-    if @current_arg[0] != "*"
+    if @current_parameter[0] != "*"
       # If there are any remaining positional arguments:
       if check_remaining_quoteless_args(pointer) || check_remaining_quote_args.call()
-        if @arg_pointer == @method_args.size - 1
+        if @arg_pointer == @parameters.size - 1
           raise_parser_error(pointer, "TooMuchArgumentsError")
         end
         # If the exact next item in the input is a positional argument
         if check_next_quoteless_arg(pointer) || check_next_quote_args.call()
           @arg_pointer += 1
-          @current_arg = @method_args[@arg_pointer]
+          @current_parameter = @parameters[@arg_pointer]
         end
         return
       end
-      if @arg_pointer != @method_args.size - 1 and !check_every_optional_args.call()
+      if @arg_pointer != @parameters.size - 1 and !check_every_optional_args.call()
         raise_parser_error(pointer, "NotEnoughArgumentsError")
       end
     end
 
     # End the method if current arg is the last one, and there's nothing left to parse
-    return if @arg_pointer == @method_args.size - 1
+    return if @arg_pointer == @parameters.size - 1
     return if peek_until_not(@user_input, pointer, "right", " ")[0] == true
 
-    if @current_arg[0] == "*"
-      # Loop over the rest of the arguments and check if they're optional arguments
-      for arg in @method_args[(@method_args.index(@current_arg) + 1)..-1]
-        if arg.class == String and !arg.include?("=")
+    if @current_parameter[0] == "*"
+      # Loop over the rest of the parameters and check if they're optional arguments
+      for parameter in @parameters[(@parameters.index(@current_parameter) + 1)..-1]
+        if parameter.class == String and !parameter.include?("=")
           raise_parser_error(pointer, "MissingKeywordArgumentError")
         end
       end
@@ -120,12 +120,12 @@ class JekyllAwesomeParser
     end
 
     if @flags["matching"] == "argument"
-      # If the quote is not the same opening quote (eg: matching ("), but found (')), dont bother
+      # If the quote is not the same opening quote (eg: matching ("), but found (')), don't bother
       if letter != @flags["quote"]
         @tmp_string += letter
       else
         close_argument(pointer)
-        bump_current_arg(pointer, letter)
+        bump_current_parameter(pointer, letter)
         return
       end
     end
@@ -154,7 +154,7 @@ class JekyllAwesomeParser
         # Manually removing all commas, ok, it's hacky I know
         @tmp_string = @tmp_string.gsub(",", "")
         close_argument(pointer)
-        bump_current_arg(pointer, letter)
+        bump_current_parameter(pointer, letter)
       end
     end
   end

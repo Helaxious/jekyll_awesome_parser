@@ -5,9 +5,9 @@ class JekyllAwesomeParser
     tmp_parser = JekyllAwesomeParser.new
 
     # Because the parser doesn't know it's parsing a list, and doesn't know the
-    # specified type, we need to tell it manually
-    full_arg = @clean_lookup[@current_arg] || @current_arg
-    type_name = @type_lookup[full_arg] || @type_lookup[@current_arg]
+    # parameter type, assign some variables that tells it so
+    full_parameter = @clean_lookup[@current_parameter] || @current_parameter
+    type_name = @type_lookup[full_parameter] || @type_lookup[@current_parameter]
 
     tmp_parser.instance_variable_set(:@matching_list, true)
     tmp_parser.instance_variable_set(:@actual_type_name, type_name)
@@ -16,11 +16,11 @@ class JekyllAwesomeParser
       tmp_parser.deactivate_print_errors
     end
 
-    parsed_list = tmp_parser.parse_arguments(["*list_arguments"], @tmp_string, convert_types=@convert_types, print_errors=@print_errors)
+    parsed_list = tmp_parser.parse_input(["*list_arguments"], @tmp_string, convert_types=@convert_types, print_errors=@print_errors)
 
-    @current_arg = @clean_lookup[@current_arg] if @clean_lookup.include?(@current_arg)
-    @parsed_result[@current_arg] += [parsed_list["list_arguments"]]
-    bump_current_arg(pointer, letter)
+    @current_parameter = @clean_lookup[@current_parameter] if @clean_lookup.include?(@current_parameter)
+    @parsed_result[@current_parameter] += [parsed_list["list_arguments"]]
+    bump_current_parameter(pointer, letter)
 
     @brackets_count = {"[" => 0, "]" => 0}
     @flags["matching"] = nil
@@ -28,8 +28,8 @@ class JekyllAwesomeParser
   end
 
   def check_lists(pointer, letter)
-    # To identify the end of a list, even with nested list, we just need to count the number
-    # of opening and closing brackets, when they finally are equal, the list has closed
+    # To identify the end of a list, even with nested lists, we just need to count the number
+    # of opening and closing brackets, when they finally are equal, the list was closed
     if ["[", "]"].include?(letter) and @flags["matching"] == nil
       raise_parser_error(pointer, "ListNotClosedError") if letter == "]"
 

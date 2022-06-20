@@ -1,6 +1,6 @@
 class JekyllAwesomeParser
   def check_optional_args
-    # Checks every key in parsed_result for every empty entry and fills it with an optional arg if it exists
+    # Loops through parsed_result and fills any empty parameters if they're optional
     for k, v in @parsed_result
       if v.empty? and @optional_arg_lookup[k] != nil
         @parsed_result[k] = [@optional_arg_lookup[k]]
@@ -12,15 +12,15 @@ class JekyllAwesomeParser
     end
   end
 
-  # Ruby's dicts are ordered by insertion, so order it based on the methods arguments list
+  # Order parsed_result by insertion based on the arguments parameter
   def order_result(arguments, result)
     return arguments.map{|key|[key, result[key]]}.to_h
   end
 
-  # If the user passed nothing, check if every argument is optional, else throw an error
-  def check_empty_input(pointer, method_args, input)
+  # If there`s no user input, check if every parameter is optional, else, throw an error
+  def check_empty_input(pointer, parameters, input)
     return if input != "" or @matching_list != nil
-    for method in method_args
+    for method in parameters
       is_optional = false
       for letter in method.split("")
         is_optional = true if letter == "="

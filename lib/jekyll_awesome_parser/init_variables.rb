@@ -1,23 +1,25 @@
 class JekyllAwesomeParser
-  def init_optional_arg_and_type_lookup(method_args)
+  def init_optional_arg_and_type_lookup(parameters)
     @optional_arg_lookup = {}
     @type_lookup = {}
-    # Parsing the method arguments to create keyword defaults and type lookups
-    for arg in method_args
-      @type_lookup[arg] = arg.split(":")[1].strip if arg.include? ":"
+    # Parsing the parameters to create keyword defaults and type lookups
+    for parameter in parameters
+      @type_lookup[parameter] = parameter.split(":")[1].strip if parameter.include? ":"
 
-      next if !(arg.include? "=")
-      if arg.include? ":"
-        @optional_arg_lookup[arg] = convert_optional_argument(method_args, arg, arg.split("=")[1].split(":")[0].strip)
+      next if !(parameter.include? "=")
+      if parameter.include? ":"
+        @optional_arg_lookup[parameter] = convert_optional_argument(parameters,
+                                            parameter, parameter.split("=")[1].split(":")[0].strip)
       else
-        @optional_arg_lookup[arg] = convert_optional_argument(method_args, arg, arg.split("=")[1].strip)
+        @optional_arg_lookup[parameter] = convert_optional_argument(parameters,
+                                            parameter, parameter.split("=")[1].strip)
       end
     end
   end
 
-  def init_variables(method_args, user_input, convert_types, print_errors)
+  def init_variables(parameters, user_input, convert_types, print_errors)
     @user_input = user_input
-    @method_args = method_args
+    @parameters = parameters
     @convert_types = convert_types
 
     if @deactivate_print_errors
@@ -28,25 +30,17 @@ class JekyllAwesomeParser
 
     ParserErrors.set_vars(@debug_context, @print_errors)
 
-    if ![true, false].include? @convert_types
-      raise TypeError, "convert_types must be a boolean, not #{convert_types.class}"
-    end
-
-    if ![true, false].include? @print_errors
-      raise TypeError, "print_errors must be a boolean, not #{print_errors.class}"
-    end
-
-    _clean_args = clean_args(@method_args.map{|key|[key, []]}.to_h).keys()
-    @clean_lookup = _clean_args.zip(@method_args).map{|clean, dirty|[clean, dirty]}.to_h
-    @dirty_lookup = _clean_args.zip(@method_args).map{|clean, dirty|[dirty, clean]}.to_h
+    _clean_parameters = clean_parameters(@parameters.map{|key|[key, []]}.to_h).keys()
+    @clean_lookup = _clean_parameters.zip(@parameters).map{|clean, dirty|[clean, dirty]}.to_h
+    @dirty_lookup = _clean_parameters.zip(@parameters).map{|clean, dirty|[dirty, clean]}.to_h
 
     @tmp_string = ""
     @flags = {"matching" => nil, "quote" => nil}
-    @current_arg = @method_args[0]
+    @current_parameter = @parameters[0]
     @arg_pointer = 0
-    @parsed_result = @method_args.map{|key|[key, []]}.to_h
+    @parsed_result = @parameters.map{|key|[key, []]}.to_h
     @brackets_count = {"[" => 0, "]" => 0}
 
-    init_optional_arg_and_type_lookup(method_args)
+    init_optional_arg_and_type_lookup(parameters)
   end
 end

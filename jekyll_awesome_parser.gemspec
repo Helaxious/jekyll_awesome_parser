@@ -7,6 +7,6 @@ Gem::Specification.new do |s|
   s.email       = 'helaxious@gmail.com'
   s.files       = ["lib/jekyll_awesome_parser.rb"] + Dir.glob("lib/jekyll_awesome_parser/*")
   s.homepage    =
-    'https://rubygems.org/gems/jekyll_awesome_parser'
+    'https://github.com/helaxious/jekyll_awesome_parser'
   s.license       = 'MIT'
 end

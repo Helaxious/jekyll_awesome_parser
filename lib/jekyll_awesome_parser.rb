@@ -6,13 +6,16 @@ require_relative "jekyll_awesome_parser/parser_errors.rb"
 require_relative "jekyll_awesome_parser/peek_functions.rb"
 require_relative "jekyll_awesome_parser/positional_args.rb"
 require_relative "jekyll_awesome_parser/type_functions.rb"
-require_relative "jekyll_awesome_parser/validate_developer_arguments.rb"
+require_relative "jekyll_awesome_parser/validate_parameters.rb"
 
 class JekyllAwesomeParser
   def initialize
     @matching_list = nil
     @actual_type_name = nil
     @debug_context = nil # Jekyll specific debugging context
+    @deactivate_print_errors = nil
+    @convert_types = false
+    @print_errors = false
   end
 
   def deactivate_print_errors
@@ -24,27 +27,27 @@ class JekyllAwesomeParser
     @debug_context = context
   end
 
-  # Gets the arg name from the methods arguments list (eg: "arg1=nil" becomes "arg1")
+  # Gets the parameter name from the parameters (eg: "arg1=nil" becomes "arg1")
   # This method is not only used after parsing, it is also used in init_variables
-  def clean_args(arguments)
-    clean_arguments = {}
-    for (key, value) in Array(arguments.clone())
+  def clean_parameters(parameters)
+    clean_parameters = {}
+    for (key, value) in Array(parameters.clone())
       key = key[1..-1] if key.include?("*")
       key = key[0...key.index("=")] if key.include?("=")
       key = key[0...key.index(":")] if key.include?(":")
       key = key.strip
-      clean_arguments[key] = value
+      clean_parameters[key] = value
     end
-    return clean_arguments
+    return clean_parameters
   end
 
-  # Grabs a specified error from the ParserErrors module, grabs some debug info, then returns the error
+  # Grabs a specified error from the ParserErrors class, then returns the error
   def raise_parser_error(pointer, error, args=nil)
 
     error = ParserErrors.const_get(error)
-    raise error.new({"user_input": @user_input, "pointer": pointer, "method_args": @method_args,
-                    "clean_args": @clean_lookup.keys,
-                    "parsed_result": clean_args(order_result(@method_args, @parsed_result)),
+    raise error.new({"user_input": @user_input, "pointer": pointer, "parameters": @parameters,
+                    "clean_parameters": @clean_lookup.keys,
+                    "parsed_result": clean_parameters(order_result(@parameters, @parsed_result)),
                     "matching_list": @matching_list}, args)
   end
 
@@ -52,16 +55,16 @@ class JekyllAwesomeParser
     ParserTypeErrors.send(error, args.merge("matching_list" => @matching_list))
   end
 
-  def parse_arguments(methods_args, input, convert_types=true, print_errors=true)
-    validate_developer_arguments(methods_args)
-    init_variables(methods_args, input, convert_types, print_errors)
+  def parse_input(parameters, input, convert_types=true, print_errors=true)
+    validate_parameters(parameters)
+    init_variables(parameters, input, convert_types, print_errors)
 
-    check_empty_input(0, methods_args, input)
+    check_empty_input(0, parameters, input)
 
     for letter, pointer in @user_input.split("").each_with_index
       if ['"', "'"].include?(letter) and @flags["matching"] != "list"
         check_quoted_strings(pointer, letter)
-        next # Don't run the code below, and go to the next iteration
+        next # Don't run the code below, and jump to the next iteration
       end
 
       next if check_lists(pointer, letter) == "next"
@@ -91,7 +94,7 @@ class JekyllAwesomeParser
         raise_parser_error(pointer, "InvalidCharacterError") if letter == "\\"
 
         @tmp_string = ""
-        # Checking for a quote less positional argument
+        # Checking for a quoteless positional argument
         if peek_until(@user_input, pointer, "right", target=[":"], stop=[" ", ","])[0] == false
           @flags["matching"],@flags["quote"] = ["argument", false]
           @tmp_string += letter
@@ -99,7 +102,7 @@ class JekyllAwesomeParser
           # If the argument is one character length and it's the end of the user input
           if pointer == input.size - 1
             close_argument(pointer)
-            bump_current_arg(pointer, letter)
+            bump_current_parameter(pointer, letter)
           end
 
         # Checking for a keyword argument
@@ -121,6 +124,6 @@ class JekyllAwesomeParser
     raise_parser_error(pointer, "StringNotClosedError") if @flags["matching"] == "argument"
     raise_parser_error(pointer, "ListNotClosedError") if @flags["matching"] == "list"
     check_optional_args()
-    return clean_args(order_result(methods_args, @parsed_result))
+    return clean_parameters(order_result(parameters, @parsed_result))
   end
 end

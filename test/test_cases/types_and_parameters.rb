@@ -68,7 +68,7 @@ class TestParser < Minitest::Test
     _test(tests, "test_no_automatic_conversion", false)
   end
 
-  def test_typed_method_arguments_same_types()
+  def test_typed_parameters_same_types()
     tests = [
     {"args":["article: str"], "input": "article: 'How I was raised by a bear'",
     "result": {"article" => ["How I was raised by a bear"]}, "exception": nil},
@@ -88,10 +88,10 @@ class TestParser < Minitest::Test
     {"args":["recipe: list"], "input": "recipe: ['two eggs', 'one cup of flour', 'love']",
     "result": {"recipe" => [['two eggs', 'one cup of flour', 'love']]}, "exception": nil},
     ]
-    _test(tests, "test_typed_method_arguments_same_types")
+    _test(tests, "test_typed_parameters_same_types")
   end
 
-  def test_typed_method_arguments_different_types()
+  def test_typed_parameters_different_types()
     tests = [
     [["year: str"], "year: 1970"],
     [["year: bool"], "year: 1970"],
@@ -152,21 +152,21 @@ class TestParser < Minitest::Test
     _test(tests, "test_type_star_args")
   end
 
-  def test_validate_developer_arguments
-    # Note that this test's asserts number is actually half what it's supposed to be
+  def test_validate_parameters
+    # Note that this tests asserts number is double what it's supposed to be
     tests = [
-      ["cat", "[Wrong Arg Type]"],
-      [[""], "[Empty Argument]"],
-      [[false], "[Wrong Arg Type]"],
-      [[nil], "[Wrong Arg Type]"],
-      [[123], "[Wrong Arg Type]"],
+      ["cat", "[Wrong Parameter Type]"],
+      [[""], "[Empty Parameter]"],
+      [[false], "[Wrong Parameter Type]"],
+      [[nil], "[Wrong Parameter Type]"],
+      [[123], "[Wrong Parameter Type]"],
 
       [["arg1 = potato\""], "[Unclosed String]"],
       [["arg1 = \'potato\""], "[Unclosed String]"],
       [["arg1 = \"\"potato\""], "[Unclosed String]"],
       [["arg1 = \"\'potato\""]],
 
-      [["arg1 a"], "[Argument Name With Space]"],
+      [["arg1 a"], "[Parameter Name With Space]"],
       [["arg1:"], "[Empty Type]"],
       [["arg1:="], "[Empty Type]"],
       [["arg1: int =1"], "[Optional Argument After Type]"],
@@ -176,8 +176,8 @@ class TestParser < Minitest::Test
       [["arg1: type_that_doesnt_exist"], "[Invalid Type]"],
       [["arg1: int"], "[Invalid Type]"],
       [["arg1: float"], "[Invalid Type]"],
-      [["0arg1"], "[Argument Starts With Number]"],
-      [["01233123123123arg1"], "[Argument Starts With Number]"],
+      [["0arg1"], "[Parameter Starts With Number]"],
+      [["01233123123123arg1"], "[Parameter Starts With Number]"],
       [["arg1="], "[Empty Optional Argument]"],
       [["arg1=nil:"], "[Empty Type]"],
 
@@ -223,6 +223,6 @@ class TestParser < Minitest::Test
       [["arg1 = '\"potato'"]],
       [["arg1 = \"\'\\\"potato\\\"\'\""]],
     ]
-    _test_validate_developer_arguments(tests)
+    _test_validate_parameters(tests)
   end
 end

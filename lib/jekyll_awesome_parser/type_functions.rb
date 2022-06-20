@@ -1,5 +1,5 @@
 class JekyllAwesomeParser
-  # Convert the tmp string to its type as specified in the current_arg (eg: 'arg1: bool')
+  # Convert the tmp_string to its type as specified in the current parameter (eg: 'arg1: bool')
   def convert_type(string, convert_nil=false)
     check_int = /^[0-9]+$/
     check_float = /^[0-9]+(\.[0-9]+)$/
@@ -14,13 +14,13 @@ class JekyllAwesomeParser
     return string
   end
 
-  # Converts an optional argument, either converts the type, or parses a quoted string for errors
-  def convert_optional_argument(arg_list, full_arg, argument)
+  # Converts an optional argument, either converts the type, or parses its quoted string for errors
+  def convert_optional_argument(parameters, full_parameter, argument)
     # If the optional argument is enclosed between quotes:
     is_string = ["\"", "\'"].include?(argument[0]) and ["\"", "\'"].include?(argument[-1])
     is_list = argument[0] == "[" and argument[-1] == "]"
     if is_string or is_list
-      return parse_optional_argument(arg_list, full_arg, argument)
+      return parse_optional_argument(parameters, full_parameter, argument)
     else
       return convert_type(argument, convert_nil=true)
     end
@@ -28,9 +28,9 @@ class JekyllAwesomeParser
 
   # Check if user arg matches the developer specified type and throws an error in case it doesn't
   def check_user_type(pointer)
-    full_arg = @clean_lookup[@current_arg] || @current_arg
-    arg_name = @dirty_lookup[@current_arg]
-    type_name = @type_lookup[full_arg] || @type_lookup[@current_arg]
+    full_parameter = @clean_lookup[@current_parameter] || @current_parameter
+    parameter_name = @dirty_lookup[@current_parameter]
+    type_name = @type_lookup[full_parameter] || @type_lookup[@current_parameter]
 
     user_type = convert_type(@tmp_string).class
     # In case user_type is a quoted string
@@ -46,10 +46,10 @@ class JekyllAwesomeParser
     correct_type = {"str" => String, "num" => "a number", "list" => Array, "bool" => "a boolean"}[type_name]
 
     raise_error = lambda do |extra_info=nil|
-      error_args = {"arg_name" => arg_name, "user_input" => @user_input, "correct_type" => correct_type,
-                    "wrong_type" => user_type, "full_arg" => full_arg, "additional_info" => extra_info,
-                    "pointer" => pointer, "clean_args" => @clean_lookup.keys, "method_args" => @method_args,
-                    "parsed_result" => clean_args(order_result(@method_args, @parsed_result)),
+      error_args = {"parameter_name" => parameter_name, "user_input" => @user_input, "correct_type" => correct_type,
+                    "wrong_type" => user_type, "full_parameter" => full_parameter, "additional_info" => extra_info,
+                    "pointer" => pointer, "clean_parameters" => @clean_lookup.keys, "parameters" => @parameters,
+                    "parsed_result" => clean_parameters(order_result(@parameters, @parsed_result)),
                     "user_arg" => @tmp_string, "matching_list" => @matching_list}
 
       raise_parser_type_error("wrong_type", error_args)
@@ -69,7 +69,7 @@ class JekyllAwesomeParser
 
     if ["bool", "boolean"].include? type_name and !([TrueClass, FalseClass].include? user_type)
       # If the user passed "true" or "false" as a string, show an note:
-      if user_type == String and (@tmp_string == "false" or @tmp_string == "true")
+      if user_type == String and (@tmp_string == "true" or @tmp_string == "false")
         quoted_arg = {"\"" => "\"#{@tmp_string}\"", "\'" => "\'#{@tmp_string}\'"}[@flags["quote"]]
         raise_error.call "(Side note, maybe you want to get rid of the quotes of the input?\n"+
                           "#{quoted_arg} would be #{@tmp_string})"
