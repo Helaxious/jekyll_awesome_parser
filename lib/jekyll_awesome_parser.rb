@@ -86,17 +86,17 @@ class JekyllAwesomeParser
       end
 
       # Checking for a stray colon
-      if letter == ":" and @flags["matching"] == nil
+      if letter == ":" and @flags["matching"].nil?
         raise_parser_error(pointer, "InvalidKeywordError")
       end
 
-      if @flags["matching"] == nil && ![" ", ","].include?(letter)
+      if @flags["matching"].nil? && ![" ", ","].include?(letter)
         raise_parser_error(pointer, "InvalidCharacterError") if letter == "\\"
 
         @tmp_string = ""
         # Checking for a quoteless positional argument
         if peek_until(@user_input, pointer, "right", target=[":"], stop=[" ", ","])[0] == false
-          @flags["matching"],@flags["quote"] = ["argument", false]
+          @flags["matching"], @flags["quote"] = ["argument", false]
           @tmp_string += letter
 
           # If the argument is one character length and it's the end of the user input

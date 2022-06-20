@@ -51,7 +51,7 @@ class JekyllAwesomeParser
   #  ^      ^ match!   #   ^ doesn't match!
   #  pointer           # pointer
   def peek_after(string, pointer, direction, target, target_after, stop=nil)
-    stop = [] if stop === nil
+    stop = [] if stop.nil?
     stop = Array(stop) if stop.class == String
     target_after = Array(target_after) if target_after.class == String
 

@@ -30,15 +30,15 @@ class JekyllAwesomeParser
 
     ParserErrors.set_vars(@debug_context, @print_errors)
 
-    _clean_parameters = clean_parameters(@parameters.map{|key|[key, []]}.to_h).keys()
-    @clean_lookup = _clean_parameters.zip(@parameters).map{|clean, dirty|[clean, dirty]}.to_h
-    @dirty_lookup = _clean_parameters.zip(@parameters).map{|clean, dirty|[dirty, clean]}.to_h
+    _clean_parameters = clean_parameters(@parameters.map{ |key|[key, []] }.to_h).keys()
+    @clean_lookup = _clean_parameters.zip(@parameters).map{ |clean, dirty|[clean, dirty] }.to_h
+    @dirty_lookup = _clean_parameters.zip(@parameters).map{ |clean, dirty|[dirty, clean] }.to_h
 
     @tmp_string = ""
     @flags = { "matching" => nil, "quote" => nil }
     @current_parameter = @parameters[0]
     @arg_pointer = 0
-    @parsed_result = @parameters.map{|key|[key, []]}.to_h
+    @parsed_result = @parameters.map{ |key|[key, []] }.to_h
     @brackets_count = { "[" => 0, "]" => 0 }
 
     init_optional_arg_and_type_lookup(parameters)

@@ -23,10 +23,10 @@ class TestParser < Minitest::Test
     for test, i in tests.each_with_index
       args, input, result, exception = test.values
 
-      if exception == nil
+      if exception.nil?
         assert_equal(result, parse.call(args, input, convert_types, false))
       else
-        assert_raises(exception) { parse.call(args, input, convert_types, print_errors=false)}
+        assert_raises(exception) { parse.call(args, input, convert_types, print_errors=false) }
         if @@display_errors == true
           begin
             parse.call(args, input, convert_types, print_errors=false)
@@ -48,7 +48,7 @@ class TestParser < Minitest::Test
 
       input, error_name = test
       func_message = assert_raises(TypeError) { @@parser.validate_parameters(input) }
-      assert(func_message.to_s.start_with?(error_name), "'#{func_message.to_s}' should start with '#{error_name}'")
+      assert(func_message.to_s.start_with?(error_name), "'#{func_message}' should start with '#{error_name}'")
 
       if @@display_errors == true
         begin
@@ -65,7 +65,7 @@ class TestParser < Minitest::Test
     for test, i in tests.each_with_index
       methods, input = test
       func_message = assert_raises(TypeError) { @@parser.parse_input(methods, input, print_errors=false) }
-      assert(func_message.to_s.start_with?("[Wrong Type]"), "'#{func_message.to_s}' should start with [Wrong Type]")
+      assert(func_message.to_s.start_with?("[Wrong Type]"), "'#{func_message}' should start with [Wrong Type]")
 
       if @@display_errors == true
         begin

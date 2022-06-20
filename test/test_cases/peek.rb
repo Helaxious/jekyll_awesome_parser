@@ -31,7 +31,7 @@ class TestParser < Minitest::Test
     [["abc  d  cba", 10, "left", "d", " "], [false, "stop", 7]]
     ]
     for (input, result) in tests
-      self.assert_equal(@@parser.peek_until(*input), result)
+      assert_equal(@@parser.peek_until(*input), result)
     end
   end
 
@@ -43,7 +43,7 @@ class TestParser < Minitest::Test
     [[" a      ", 5, "left", " "], [true, "match", 1]],
     [[" a     a ", 5, "right", " "], [true, "match", 7]],
     [[" aaaaaaa ", 5, "right", "a"], [true, "match", 8]],
-    [[" aaaaaaa ", 5, "left", "a"], [true, "match", 0]],
+    [[" aaaaaaa ", 5, "left", "a"], [true, "match", 0]]
     ]
     for (input, result) in tests
       assert_equal(@@parser.peek_until_not(*input), result)

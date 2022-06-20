@@ -84,7 +84,7 @@ class JekyllAwesomeParser
         if peek(parameter_name, i, "left", "\\")[1] == "match"
           parsed_string += letter
         else
-          matching[1] = letter if matching[1] == nil
+          matching[1] = letter if matching[1].nil?
           if letter == matching[1]
             matching[0] = !matching[0]
           else

@@ -74,25 +74,25 @@ class TestParser < Minitest::Test
 
   def test_mix_match_quotes
     tests = [
-    { "args":["sentence"], "input": "sentence: \"He says, 'I hate peanuts'\"",
+    { "args": ["sentence"], "input": "sentence: \"He says, 'I hate peanuts'\"",
     "result": { "sentence" => ["He says, 'I hate peanuts'"] }, "exception": nil },
 
-    { "args":["sentence"], "input": 'sentence: \'She replies, "Do you mean the comic?"\'',
+    { "args": ["sentence"], "input": 'sentence: \'She replies, "Do you mean the comic?"\'',
     "result": { "sentence" => ["She replies, \"Do you mean the comic?\""] }, "exception": nil },
 
-    { "args":["sentence"],
+    { "args": ["sentence"],
     "input": "sentence: \"He replies, \\\"'Do you mean the comic?' No, the comic is kinda nice\\\"\"",
     "result": { "sentence" => ["He replies, \"'Do you mean the comic?' No, the comic is kinda nice\""] },
     "exception": nil },
 
-    { "args":["character"], "input": "character: \" ' \"",
+    { "args": ["character"], "input": "character: \" ' \"",
     "result": { "character" => ["'"] }, "exception": nil },
 
-    { "args":["character"], "input": "character: ' \" '",
+    { "args": ["character"], "input": "character: ' \" '",
     "result": { "character" => ["\""] }, "exception": nil },
 
-    { "args":["character"], "input": "character: '\"\\'\"'",
-    "result": { "character" => ["\"'\""] }, "exception": nil },
+    { "args": ["character"], "input": "character: '\"\\'\"'",
+    "result": { "character" => ["\"'\""] }, "exception": nil }
     ]
     _test(tests, "test_mix_match_quotes")
   end
@@ -100,15 +100,15 @@ class TestParser < Minitest::Test
   def test_mix_match_quotes_unclosed_string
     # It should only raise an error if only the surrounding quotes are missing
     tests = [
-    { "args":["sentence"], "input": "sentence: \"He says, 'I hate peanuts'",
+    { "args": ["sentence"], "input": "sentence: \"He says, 'I hate peanuts'",
     "result": nil, "exception": get_parser_error("StringNotClosedError") },
 
-    { "args":["sentence"], "input": 'sentence: \'She replies, "Do you mean the comic?"',
+    { "args": ["sentence"], "input": 'sentence: \'She replies, "Do you mean the comic?"',
     "result": nil, "exception": get_parser_error("StringNotClosedError") },
 
-    { "args":["sentence"],
+    { "args": ["sentence"],
     "input": "sentence: \"He replies, \\\"'Do you mean the comic?' No, the comic is kinda nice\\\"",
-    "result": nil, "exception": get_parser_error("StringNotClosedError") },
+    "result": nil, "exception": get_parser_error("StringNotClosedError") }
     ]
     _test(tests, "test_mix_match_quotes_unclosed_string")
   end
@@ -124,7 +124,7 @@ class TestParser < Minitest::Test
   end
 
   def test_init_variables
-    parameters,input = [["*arg1", "arg2=None", "arg3"], "potato"]
+    parameters, input = [["*arg1", "arg2=None", "arg3"], "potato"]
     test_parser = JekyllAwesomeParser.new
     test_parser.init_variables(parameters, input, false, false)
 
@@ -140,7 +140,7 @@ class TestParser < Minitest::Test
   def test_empty_strings
     tests = [
     { "args" => ["arg1"], "input": "''",
-    "result": { "arg1" => [""] }, "exception": nil },
+    "result": { "arg1" => [""] }, "exception": nil }
     ]
     _test(tests, "test_developer_type_errors")
   end
@@ -151,7 +151,7 @@ class TestParser < Minitest::Test
     "result": nil, "exception": get_parser_error("NotEnoughArgumentsError") },
 
     { "args" => ["arg1=123", "arg2=312", "arg3"], "input": "",
-    "result": nil, "exception": get_parser_error("NotEnoughArgumentsError") },
+    "result": nil, "exception": get_parser_error("NotEnoughArgumentsError") }
     ]
     _test(tests, "test_developer_type_errors")
   end

@@ -67,14 +67,14 @@ class JekyllAwesomeParser
       return peek_until(@user_input, pointer, "right", ["\"", "'"])[1] == "match"
     end
     check_next_quote_args = lambda do
-      return peek_after(@user_input, pointer, "right", [" ", ","], ['"',"'"])[0] || peek(@user_input, pointer, "right", ["\"", "'"])[0]
+      return peek_after(@user_input, pointer, "right", [" ", ","], ['"', "'"])[0] || peek(@user_input, pointer, "right", ["\"", "'"])[0]
     end
 
     # Gets every incomplete parameters, and checks if every one is optional
     check_every_optional_args = lambda do
       for k, v in @parsed_result
         if v == []
-          return false if @optional_arg_lookup[k] == nil
+          return false if @optional_arg_lookup[k].nil?
         end
       end
       return true
@@ -131,7 +131,7 @@ class JekyllAwesomeParser
     end
     if @flags["matching"] != "argument"
       @tmp_string = ""
-      @flags["matching"],@flags["quote"] = ["argument", letter]
+      @flags["matching"], @flags["quote"] = ["argument", letter]
 
       # If there are no remaining quotes, throw an error
       if peek_until(@user_input, pointer, "right", ["'", "\""])[1] != "match" and

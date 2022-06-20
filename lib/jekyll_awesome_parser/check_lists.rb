@@ -30,7 +30,7 @@ class JekyllAwesomeParser
   def check_lists(pointer, letter)
     # To identify the end of a list, even with nested lists, we just need to count the number
     # of opening and closing brackets, when they finally are equal, the list was closed
-    if ["[", "]"].include?(letter) and @flags["matching"] == nil
+    if ["[", "]"].include?(letter) and @flags["matching"].nil?
       raise_parser_error(pointer, "ListNotClosedError") if letter == "]"
 
       @flags["matching"] = "list"

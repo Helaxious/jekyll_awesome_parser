@@ -41,7 +41,7 @@ class JekyllAwesomeParser
     type_name = @actual_type_name if @actual_type_name != nil
 
     # Don't bother if the type is not specified
-    return if type_name == nil
+    return if type_name.nil?
 
     correct_type = { "str" => String, "num" => "a number", "list" => Array, "bool" => "a boolean" }[type_name]
 
