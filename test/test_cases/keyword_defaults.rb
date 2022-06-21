@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class TestParser < Minitest::Test
   def test_keyword_defaults_arguments_single_args
     tests = [

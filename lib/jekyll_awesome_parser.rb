@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "jekyll_awesome_parser/after_parsing"
 require_relative "jekyll_awesome_parser/check_lists"
 require_relative "jekyll_awesome_parser/init_variables"
@@ -78,9 +80,7 @@ class JekyllAwesomeParser
         end
 
         # Ignore if the escape character is not being escaped
-        if letter == "\\"
-          next if peek(input, pointer, "left", "\\")[1] != "match"
-        end
+        next if peek(input, pointer, "left", "\\")[1] != "match" && letter == "\\"
         @tmp_string += letter
         next
       end

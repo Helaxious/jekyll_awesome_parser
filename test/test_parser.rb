@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "minitest/autorun"
 require_relative "../lib/jekyll_awesome_parser"
 require_relative "test_cases/keyword_arguments"

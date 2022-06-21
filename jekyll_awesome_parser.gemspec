@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Gem::Specification.new do |s|
   s.name        = 'jekyll_awesome_parser'
   s.version     = '0.1.0'

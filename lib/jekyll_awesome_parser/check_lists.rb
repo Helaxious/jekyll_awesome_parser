@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class JekyllAwesomeParser
   # Recursively calls parse_argument in the list match to parse inside of it
   def parse_list(pointer, letter)

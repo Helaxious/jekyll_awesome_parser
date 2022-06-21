@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class JekyllAwesomeParser
   def validate_parameters_type(parameters, parameter, type_list)
     colon_pos = peek_until(parameter, 0, "right", ":")[2]
@@ -34,9 +36,7 @@ class JekyllAwesomeParser
 
     for letter, i in parameter_name.split("").each_with_index
       # Unless the escape character is itself escaped, ignore
-      if letter == "\\"
-        parsed_string += letter if peek(parameter_name, i, "left", "\\")[1] == "match"
-      end
+      parsed_string += letter if peek(parameter_name, i, "left", "\\")[1] == "match" && letter == "\\"
 
       if ["[", "]"].include?(letter) && (matching[0] == false)
         if i != 0

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class JekyllAwesomeParser
   # Close a positional argument, and adds it to parsed_result
   def close_argument(pointer)
@@ -69,9 +71,7 @@ class JekyllAwesomeParser
     # Gets every incomplete parameters, and checks if every one is optional
     check_every_optional_args = lambda do
       for k, v in @parsed_result
-        if v == []
-          return false if @optional_arg_lookup[k].nil?
-        end
+        return false if @optional_arg_lookup[k].nil? and v == []
       end
       return true
     end
@@ -99,7 +99,7 @@ class JekyllAwesomeParser
     if @current_parameter[0] == "*"
       # Loop over the rest of the parameters and check if they're optional arguments
       for parameter in @parameters[(@parameters.index(@current_parameter) + 1)..-1]
-        if (parameter.class == String) && !parameter.include?("=")
+        if (parameter.instance_of?(String)) && !parameter.include?("=")
           raise_parser_error(pointer, "MissingKeywordArgumentError")
         end
       end

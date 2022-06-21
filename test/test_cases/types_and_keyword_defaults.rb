@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class TestParser < Minitest::Test
   def test_types_and_keyword_defaults
     tests = [

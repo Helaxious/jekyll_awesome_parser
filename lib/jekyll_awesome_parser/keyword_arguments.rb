@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class JekyllAwesomeParser
   def validate_keyword(letter, pointer, keyword)
     if peek_until_not(@user_input, pointer, "right", target=[" "])[1] == "no_match"
@@ -23,7 +25,9 @@ class JekyllAwesomeParser
     if letter != ":"
       raise_parser_error(pointer, "InvalidKeywordError") if ["\\"].include?(letter)
       @tmp_string += letter
+      return
     end
+
     if letter == ":"
       keyword = @tmp_string.strip
       validate_keyword(letter, pointer, keyword)

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class JekyllAwesomeParser
   # Convert the tmp_string to its type as specified in the current parameter (eg: 'arg1: bool')
   def convert_type(string, convert_nil=false)
@@ -11,6 +13,7 @@ class JekyllAwesomeParser
     return true if string == "true"
     # Small workaround, since in the optional_arg_lookup the argument can't be nil
     return :nil if (string == "nil") && (convert_nil == true)
+    
     return string
   end
 
@@ -56,11 +59,11 @@ class JekyllAwesomeParser
     end
 
     raise_error.call if (type_name == "num") && !([Integer, Float].include? user_type)
-    raise_error.call if (type_name == "list") && !(user_type == Array)
+    raise_error.call if (type_name == "list") && user_type != Array
 
-    if (type_name == "str") && !(user_type == String)
+    if (type_name == "str") && user_type != String
       if [TrueClass, FalseClass].include? user_type
-        raise_error.call "(If you wanted to pass '#{@tmp_string}' as a string, you'll have to put it\n"+
+        raise_error.call "(If you wanted to pass '#{@tmp_string}' as a string, you'll have to put it\n"\
                         "between quotes (\"\" or ''))"
       else
         raise_error.call
@@ -71,7 +74,7 @@ class JekyllAwesomeParser
       # If the user passed "true" or "false" as a string, show an note:
       if (user_type == String) && ((@tmp_string == "true") || (@tmp_string == "false"))
         quoted_arg = { "\"" => "\"#{@tmp_string}\"", "\'" => "\'#{@tmp_string}\'" }[@flags["quote"]]
-        raise_error.call "(Side note, maybe you want to get rid of the quotes of the input?\n"+
+        raise_error.call "(Side note, maybe you want to get rid of the quotes of the input?\n"\
                           "#{quoted_arg} would be #{@tmp_string})"
       else
         raise_error.call

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class JekyllAwesomeParser
   def check_optional_args
     # Loops through parsed_result and fills any empty parameters if they're optional
@@ -12,7 +14,7 @@ class JekyllAwesomeParser
 
   # Order parsed_result by insertion based on the arguments parameter
   def order_result(arguments, result)
-    return arguments.map{ |key|[key, result[key]] }.to_h
+    return arguments.map { |key| [key, result[key]] }.to_h
   end
 
   # If there`s no user input, check if every parameter is optional, else, throw an error

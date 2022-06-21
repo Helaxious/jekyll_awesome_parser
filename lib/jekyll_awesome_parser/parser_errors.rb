@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 def get_debug_info(info, args)
   message = ["User Input: #{info[:user_input]}", (" " * (info[:pointer] + 12)) + "^",
   "Argument Names: #{info[:clean_parameters]}"].join("\n")
@@ -9,8 +11,8 @@ def get_debug_info(info, args)
 
   # FIXME
   if info[:matching_list] != nil
-    message += "\n\n(Important note: The parser was parsing inside a list when it threw this error,\n"+
-    "that means that the debug information probably is not complete, this is a known issue\n"+
+    message += "\n\n(Important note: The parser was parsing inside a list when it threw this error,\n"\
+    "that means that the debug information probably is not complete, this is a known issue\n"\
     "and it will be fixed later, sorry for the inconvenience.)"
   end
   return message
@@ -62,71 +64,81 @@ class JekyllAwesomeParser
 
     class InvalidCharacterError < ParserError
       def initialize(info, args)
-        @message = "[Invalid Character] It was detected a backslash '\\' in the input."+
+        @message = "[Invalid Character] It was detected a backslash '\\' in the input."\
                     "Maybe you accidentally typed that? (Backslashes are only allowed for escaping quotes)\n"
 
         super(info, args)
       end
     end
+
     class StringNotClosedError < ParserError
       def initialize(info, args)
         @message = "[String Not Closed] It was detected an unclosed string. Maybe you forgot to close an string or mixed different quotes?"
         super(info, args)
       end
     end
+
     class InvalidKeywordError < ParserError
       def initialize(info, args)
         @message = "[Invalid Keyword] It was detected an invalid keyword. Maybe you put a stray colon, or you put a backslash in your keyword?"
         super(info, args)
       end
     end
+
     class EmptyKeywordError < ParserError
       def initialize(info, args)
-        @message = "[Empty keyword] No positional argument was detected past this keyword.\n"+
+        @message = "[Empty keyword] No positional argument was detected past this keyword.\n"\
                     "Maybe you forgot to enter an argument, or maybe you accidentally put a colon ':'?"
         super(info, args)
       end
     end
+
     class TooMuchArgumentsError < ParserError
       def initialize(info, args)
         @message = "[Too Much Arguments] It was given more arguments than specified in the parameters!"
         super(info, args)
       end
     end
+
     class NotEnoughArgumentsError < ParserError
       def initialize(info, args)
         @message = "[Not Enough Arguments] It was given less arguments than specified in the parameters!"
         super(info, args)
       end
     end
+
     class RepeatedKeywordError < ParserError
       def initialize(info, args)
         @message = "[Repeated Keyword] It was detected that a keyword was given two or more times."
         super(info, args)
       end
     end
+
     class UnexpectedKeywordError < ParserError
       def initialize(info, args)
-        @message = "[Unexpected Keyword] It was given a keyword that was not specified in the parameters!\n"+
+        @message = "[Unexpected Keyword] It was given a keyword that was not specified in the parameters!\n"\
                     "Maybe you accidentally put a colon in a string?"
         super(info, args)
       end
     end
+
     class MissingKeywordArgumentError < ParserError
       def initialize(info, args)
-        @message = "[Missing Keyword] You need to pass one or more keyword arguments (write the argument name with a colon before your arguent).\n"+
+        @message = "[Missing Keyword] You need to pass one or more keyword arguments (write the argument name with a colon before your arguent).\n"\
                     "As one or more parameters were specified as keyword-only arguments."
         super(info, args)
       end
     end
+
     class ListNotClosedError < ParserError
       def initialize(info, args)
-        @message = "[List Not Closed] It was detected an unclosed list! Maybe you forgot to close the list with ']'?\n"+
-                    "(In an additional note, if you intended to use the brackets characters in\n"+
+        @message = "[List Not Closed] It was detected an unclosed list! Maybe you forgot to close the list with ']'?\n"\
+                    "(In an additional note, if you intended to use the brackets characters in\n"\
                     "a string, you'll need to put quotes ('' or \"\") in your string.)"
         super(info, args)
       end
     end
+
     class KeywordArgumentInListError < ParserError
       def initialize(info, args)
         @message = "[Keyword Arg in List] It was detected an keyword argument inside a list!"
@@ -143,14 +155,14 @@ class JekyllAwesomeParser
     def self.raise_type_error(message, args, developer_error=true)
       args["extra_info"].each { |info| message += "\n" + info } if (args != nil) && args["extra_info"]
 
-      developer_note = "\n\n(This is a developer error, this error should be fixed by the\n" +
+      developer_note = "\n\n(This is a developer error, this error should be fixed by the\n" \
                   "developers and not the user, if you're the user, contact the developers!)"
       message += developer_note if developer_error
 
       # FIXME
       if args["matching_list"] != nil
-        message += "\n\n(Important note: The parser was parsing inside a list when it threw this error,\n"+
-                    "that means that the debug information probably is not complete, this is a known issue\n"+
+        message += "\n\n(Important note: The parser was parsing inside a list when it threw this error,\n"\
+                    "that means that the debug information probably is not complete, this is a known issue\n"\
                     "and it will be fixed later, sorry for the inconvenience.)"
       end
 
@@ -172,7 +184,7 @@ class JekyllAwesomeParser
 
     def self.parameter_starts_with_number(args)
       check_args_is_nil(args)
-      message = "[Parameter Starts With Number] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} starts with a number.\n"+
+      message = "[Parameter Starts With Number] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} starts with a number.\n"\
                 "(Ruby doesn't allow variables that starts with a number :p)"
 
       raise_type_error(message, args, developer_error=true)
@@ -204,7 +216,7 @@ class JekyllAwesomeParser
 
     def self.optional_arg_after_type(args)
       check_args_is_nil(args)
-      message = "[Optional Argument After Type] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} has an optional arg (also known as 'keyword default')\n"+
+      message = "[Optional Argument After Type] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} has an optional arg (also known as 'keyword default')\n"\
                 "after a type. (a '=' was detected after a ':')"
       raise_type_error(message, args, developer_error=true)
     end
@@ -213,9 +225,9 @@ class JekyllAwesomeParser
       check_args_is_nil(args)
       message = "[Invalid Type] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} has type '#{args['type_name']}', which is not a valid type. Maybe you mispelled it?\n\n"
 
-      message += "(It was detected that you wanted to pass the type as an int/float.\n"+
-                  "For simplicity, there is no differentiation between ints and floats.\n"+
-                  "To pass a number type, use 'num' (eg: 'arg: num'). It will accept ints and floats.\n"+
+      message += "(It was detected that you wanted to pass the type as an int/float.\n"\
+                  "For simplicity, there is no differentiation between ints and floats.\n"\
+                  "To pass a number type, use 'num' (eg: 'arg: num'). It will accept ints and floats.\n"\
                   "And it will return either a int or a float.)\n\n" if args["number_note"] == true
       message += "(All valid types: #{args['type_list']})"
       raise_type_error(message, args, developer_error=true)
@@ -223,29 +235,29 @@ class JekyllAwesomeParser
 
     def self.empty_optional_arg(args)
       check_args_is_nil(args)
-      message = "[Empty Optional Argument] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} has an empty optional argument\n"+
+      message = "[Empty Optional Argument] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} has an empty optional argument\n"\
                 "(nothing was detected past the '=')"
       raise_type_error(message, args, developer_error=true)
     end
 
     def self.optional_arg_with_space(args)
       check_args_is_nil(args)
-      message = "[Optional Argument With Space] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} has an optional argument with spaces.\n"+
+      message = "[Optional Argument With Space] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} has an optional argument with spaces.\n"\
                 "Maybe you tried to pass multiple parameters?"
       raise_type_error(message, args, developer_error=true)
     end
 
     def self.unclosed_string(args)
       check_args_is_nil(args)
-      message = "[Unclosed String] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} has an unclosed quote.\n"+
-                "Check if you accidentally have not mixed single and double quotes,\n"+
+      message = "[Unclosed String] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} has an unclosed quote.\n"\
+                "Check if you accidentally have not mixed single and double quotes,\n"\
                 "or maybe you forgot to escape a quote, or maybe you just forgot to put a quote?"
       raise_type_error(message, args, developer_error=true)
     end
 
     def self.unclosed_list(args)
       check_args_is_nil(args)
-      message = "[Unclosed List] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} has an unclosed list.\n"+
+      message = "[Unclosed List] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} has an unclosed list.\n"\
                 "Check if you accidentally have not mixed the brackets."
       raise_type_error(message, args, developer_error=true)
     end
@@ -258,7 +270,7 @@ class JekyllAwesomeParser
 
     def self.multiple_arguments(args)
       check_args_is_nil(args)
-      message = "[Multiple Arguments] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} has multiple arguments, when it should only have one.\n"+
+      message = "[Multiple Arguments] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} has multiple arguments, when it should only have one.\n"\
                 "In an additional note, you may have wanted to wrap the arguments in a list."
       raise_type_error(message, args, developer_error=true)
     end
@@ -269,9 +281,9 @@ class JekyllAwesomeParser
       wrong_type, pointer, clean_parameters = args["wrong_type"], args["pointer"], args["clean_parameters"]
       parameters, parsed_result, user_arg = args["parameters"], args["parsed_result"], args["user_arg"]
 
-      message = "[Wrong Type] Argument '#{arg_name}' (which was provided as '#{user_arg}') should be #{correct_type}, not #{wrong_type}\n"+
-                "User Input: #{user_input}\n"+
-                "#{(' ' * (pointer + 12)) + "^\n"}"+
+      message = "[Wrong Type] Argument '#{arg_name}' (which was provided as '#{user_arg}') should be #{correct_type}, not #{wrong_type}\n"\
+                "User Input: #{user_input}\n"\
+                "#{(' ' * (pointer + 12)) + "^\n"}"\
                 "Argument Names: #{clean_parameters}"
 
       message += "\n" + args["additional_info"] if (args != nil) && args["additional_info"]
@@ -281,8 +293,8 @@ class JekyllAwesomeParser
 
       # FIXME
       if args["matching_list"] != nil
-        message += "\n\n(Important note: The parser was parsing inside a list when it threw this error,\n"+
-                    "that means that the debug information probably is not complete, this is a known issue\n"+
+        message += "\n\n(Important note: The parser was parsing inside a list when it threw this error,\n"\
+                    "that means that the debug information probably is not complete, this is a known issue\n"\
                     "and it will be fixed later, sorry for the inconvenience.)"
       end
 

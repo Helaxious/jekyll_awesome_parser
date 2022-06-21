@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class TestParser < Minitest::Test
   def test_basic_positional_arguments_and_star_args
     tests = [

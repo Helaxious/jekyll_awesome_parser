@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 class JekyllAwesomeParser
   # Looks if there's an letter in a string in the left, or in the right of the pointer
   def peek(string, pointer, direction, target, stop=nil)
-    stop = Array(stop) if stop.class == String
-    target = Array(target) if target.class == String
+    stop = Array(stop) if stop.instance_of?(String)
+    target = Array(target) if target.instance_of?(String)
 
     direction = ({ "left" => -1, "right" => 1 })[direction]
     if (0 <= pointer + direction) && (pointer + direction <= string.size - 1)
@@ -42,8 +44,8 @@ class JekyllAwesomeParser
   #  pointer           # pointer
   def peek_after(string, pointer, direction, target, target_after, stop=nil)
     stop = [] if stop.nil?
-    stop = Array(stop) if stop.class == String
-    target_after = Array(target_after) if target_after.class == String
+    stop = Array(stop) if stop.instance_of?(String)
+    target_after = Array(target_after) if target_after.instance_of?(String)
 
     if peek(string, pointer, "right", target)[0] == true
       second_peek = peek_until_not(string, pointer, direction, target)
