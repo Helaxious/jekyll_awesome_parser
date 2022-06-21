@@ -2,9 +2,7 @@ def get_debug_info(info, args)
   message = ["User Input: #{info[:user_input]}", (" " * (info[:pointer] + 12)) + "^",
   "Argument Names: #{info[:clean_parameters]}"].join("\n")
 
-  if args != nil and args[:extra_info]
-    args[:extra_info].each { |info| message += "\n" + info }
-  end
+  args[:extra_info].each { |info| message += "\n" + info } if (args != nil) && args[:extra_info]
 
   message += ["\n\n[Info]", "parameters: #{info[:parameters]}",
             "Parsed Result: #{info[:parsed_result]}"].join("\n")
@@ -139,15 +137,11 @@ class JekyllAwesomeParser
 
   module ParserTypeErrors
     def self.check_args_is_nil(args)
-      if args.nil?
-        raise TypeError, "'args' can't be empty, please fill it with the correct parameters\n."
-      end
+      raise TypeError, "'args' can't be empty, please fill it with the correct parameters\n." if args.nil?
     end
 
     def self.raise_type_error(message, args, developer_error=true)
-      if args != nil and args["extra_info"]
-        args["extra_info"].each { |info| message += "\n" + info }
-      end
+      args["extra_info"].each { |info| message += "\n" + info } if (args != nil) && args["extra_info"]
 
       developer_note = "\n\n(This is a developer error, this error should be fixed by the\n" +
                   "developers and not the user, if you're the user, contact the developers!)"
@@ -280,9 +274,7 @@ class JekyllAwesomeParser
                 "#{(' ' * (pointer + 12)) + "^\n"}"+
                 "Argument Names: #{clean_parameters}"
 
-      if args != nil and args["additional_info"]
-        message += "\n" + args["additional_info"]
-      end
+      message += "\n" + args["additional_info"] if (args != nil) && args["additional_info"]
 
       message += ["\n\n[Info]",
       "parameters: #{parameters}", "Parsed Result: #{parsed_result}"].join("\n")

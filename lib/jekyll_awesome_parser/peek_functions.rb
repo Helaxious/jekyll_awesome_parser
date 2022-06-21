@@ -5,13 +5,9 @@ class JekyllAwesomeParser
     target = Array(target) if target.class == String
 
     direction = ({ "left" => -1, "right" => 1 })[direction]
-    if (0 <= pointer + direction) and (pointer + direction <= string.size - 1)
-      if target.include?(string[pointer + direction])
-        return [true, "match", pointer + direction]
-      end
-      if stop != nil && (stop.include?(string[pointer + direction]))
-        return [false, "stop", pointer + direction]
-      end
+    if (0 <= pointer + direction) && (pointer + direction <= string.size - 1)
+      return [true, "match", pointer + direction] if target.include?(string[pointer + direction])
+      return [false, "stop", pointer + direction] if stop != nil && (stop.include?(string[pointer + direction]))
       return [false, "no_match", pointer + direction]
     end
     return [false, "end_of_string", string.size - 1]
@@ -24,9 +20,7 @@ class JekyllAwesomeParser
     while true
       peek_pointer += pointer_direction
       result = peek(string, peek_pointer, direction, target, stop)
-      if ["match", "end_of_string", "stop"].include?(result[1])
-        return result
-      end
+      return result if ["match", "end_of_string", "stop"].include?(result[1])
     end
   end
 
@@ -37,12 +31,8 @@ class JekyllAwesomeParser
     while true
       peek_pointer += pointer_direction
       result = peek(string, peek_pointer, direction, target, nil)
-      if result[1] == "no_match"
-        return [true, "match", peek_pointer + pointer_direction]
-      end
-      if result[1] == "end_of_string"
-        return [false, "no_match", peek_pointer + pointer_direction]
-      end
+      return [true, "match", peek_pointer + pointer_direction] if result[1] == "no_match"
+      return [false, "no_match", peek_pointer + pointer_direction] if result[1] == "end_of_string"
     end
   end
 

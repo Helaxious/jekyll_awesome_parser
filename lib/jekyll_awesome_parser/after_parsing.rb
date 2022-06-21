@@ -2,12 +2,10 @@ class JekyllAwesomeParser
   def check_optional_args
     # Loops through parsed_result and fills any empty parameters if they're optional
     for k, v in @parsed_result
-      if v.empty? and @optional_arg_lookup[k] != nil
+      if v.empty? && (@optional_arg_lookup[k] != nil)
         @parsed_result[k] = [@optional_arg_lookup[k]]
 
-        if @optional_arg_lookup[k] == :nil
-          @parsed_result[k] = [nil]
-        end
+        @parsed_result[k] = [nil] if @optional_arg_lookup[k] == :nil
       end
     end
   end
@@ -19,7 +17,7 @@ class JekyllAwesomeParser
 
   # If there`s no user input, check if every parameter is optional, else, throw an error
   def check_empty_input(pointer, parameters, input)
-    return if input != "" or @matching_list != nil
+    return if (input != "") || (@matching_list != nil)
     for method in parameters
       is_optional = false
       for letter in method.split("")

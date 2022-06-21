@@ -35,12 +35,10 @@ class JekyllAwesomeParser
     for letter, i in parameter_name.split("").each_with_index
       # Unless the escape character is itself escaped, ignore
       if letter == "\\"
-        if peek(parameter_name, i, "left", "\\")[1] == "match"
-          parsed_string += letter
-        end
+        parsed_string += letter if peek(parameter_name, i, "left", "\\")[1] == "match"
       end
 
-      if ["[", "]"].include?(letter) and matching[0] == false
+      if ["[", "]"].include?(letter) && (matching[0] == false)
         if i != 0
           raise_parser_type_error("multiple_arguments", { "parameters" => parameters, "parameter_name" => full_parameter })
         end
@@ -54,9 +52,7 @@ class JekyllAwesomeParser
       end
 
       if matching[0] == "list"
-        if ["[", "]"].include?(letter)
-          brackets_count[letter] += 1
-        end
+        brackets_count[letter] += 1 if ["[", "]"].include?(letter)
         if brackets_count["["] == brackets_count["]"]
           tmp_parser = JekyllAwesomeParser.new
           # Not sure why this is commented, but I'll leave it like that
@@ -79,7 +75,7 @@ class JekyllAwesomeParser
         next
       end
 
-      if ["\"", "\'"].include? letter and matching[0] != "list"
+      if ["\"", "\'"].include?(letter) && (matching[0] != "list")
         # If the quote is escaped, ignore it
         if peek(parameter_name, i, "left", "\\")[1] == "match"
           parsed_string += letter
@@ -94,7 +90,7 @@ class JekyllAwesomeParser
         end
       end
 
-      if letter == " " and matching[0] == false
+      if (letter == " ") && (matching[0] == false)
         for letter in parameter_name.split("").each
           if ["[", "]"].include? letter
             raise_parser_type_error("multiple_arguments", { "parameters" => parameters, "parameter_name" => full_parameter })
@@ -103,9 +99,7 @@ class JekyllAwesomeParser
         raise_parser_type_error("optional_arg_with_space", { "parameters" => parameters, "parameter_name" => full_parameter })
       end
 
-      unless ["\\", "\"", "\'"].include? letter
-        parsed_string += letter
-      end
+      parsed_string += letter unless ["\\", "\"", "\'"].include? letter
     end
 
     if matching[0] == true
@@ -113,16 +107,16 @@ class JekyllAwesomeParser
     end
 
     # Some extra cases to catch
-    if ["\"", "\'"].include? parameter_name[0] and ["\"", "\'"].include? parameter_name[-1]
+    if ["\"", "\'"].include?(parameter_name[0]) && ["\"", "\'"].include?(parameter_name[-1])
       if parameter_name[0] != parameter_name[-1]
         raise_parser_type_error("unclosed_string", { "parameters" => parameters, "parameter_name" => full_parameter })
       end
-    else
-      if ["\"", "\'"].include? parameter_name[0] or ["\"", "\'"].include? parameter_name[-1]
-        raise_parser_type_error("unclosed_string", { "parameters" => parameters, "parameter_name" => full_parameter })
-      end
+    elsif ["\"", "\'"].include?(parameter_name[0]) || ["\"", "\'"].include?(parameter_name[-1])
+      raise_parser_type_error("unclosed_string", { "parameters" => parameters, "parameter_name" => full_parameter })
     end
-    raise_parser_type_error("unclosed_list", { "parameters" => parameters, "parameter_name" => full_parameter }) if matching[0] == "list"
+    if matching[0] == "list"
+      raise_parser_type_error("unclosed_list", { "parameters" => parameters, "parameter_name" => full_parameter })
+    end
     return parsed_string
   end
 
@@ -132,9 +126,7 @@ class JekyllAwesomeParser
 
     optional_arg_pos = optional_arg[2]
     # If there's no space after the '=', the position should add one
-    if optional_arg[1] == "no_match"
-      optional_arg_pos += 1
-    end
+    optional_arg_pos += 1 if optional_arg[1] == "no_match"
 
     if peek_until_not(parameter, equals_pos, "right", " ")[1] == "no_match"
       raise_parser_type_error("empty_optional_arg", { "parameters" => parameters, "parameter_name" => parameter })
@@ -143,9 +135,7 @@ class JekyllAwesomeParser
     # Checking for a space in the optional argument
     colon_pos = parameter.size - 1
     colon_match = peek_until(parameter, optional_arg_pos, "right", ":")
-    if colon_match
-      colon_pos = colon_match[2]
-    end
+    colon_pos = colon_match[2] if colon_match
 
     colon_pos -= 1 if parameter[colon_pos] == ":"
 
@@ -163,7 +153,9 @@ class JekyllAwesomeParser
 
     for parameter in parameters
       # If the parameter is empty
-      raise_parser_type_error("empty_parameter", { "parameters" => parameters, "parameter_name" => parameter }) if parameter == ""
+      if parameter == ""
+        raise_parser_type_error("empty_parameter", { "parameters" => parameters, "parameter_name" => parameter })
+      end
 
       # If the parameter is the wrong type
       raise_parser_type_error("wrong_parameter_type", { "parameters" => parameters, "parameter_name" => parameter,
@@ -182,12 +174,16 @@ class JekyllAwesomeParser
         for letter in parameter.split("")
           brackets_count[letter] += 1 if ["[", "]"].include? letter
           opening, ending = brackets_count["["], brackets_count["]"]
-          raise_parser_type_error("unclosed_list", { "parameters" => parameters, "parameter_name" => parameter }) if ending > opening
+          if ending > opening
+            raise_parser_type_error("unclosed_list", { "parameters" => parameters, "parameter_name" => parameter })
+          end
 
           # If the number of brackets aren't the same, the colon is inside a list
           colon_inside_list = true if letter == ":" && opening != ending
         end
-        raise_parser_type_error("unclosed_list", { "parameters" => parameters, "parameter_name" => parameter }) if opening != ending
+        if opening != ending
+          raise_parser_type_error("unclosed_list", { "parameters" => parameters, "parameter_name" => parameter })
+        end
         # Raise the error after looping, because unclosed lists have a higher error priority
         if colon_inside_list == true
           raise_parser_type_error("keyword_argument_in_list", { "parameters" => parameters, "parameter_name" => parameter })
@@ -195,12 +191,10 @@ class JekyllAwesomeParser
         validate_parameters_type(parameters, parameter, type_list)
       end
 
-      if parameter.include? "=" # If the parameterument is optional
-        validate_optional_parameters(parameters, parameter)
-      end
+      validate_optional_parameters(parameters, parameter) if parameter.include? "=" # If the parameterument is optional
 
       # If there's not a type nor is it optional, just check for spaces in the parameter name
-      if parameter.strip.include? " " and !(parameter.include? ":" or parameter.include? "=")
+      if parameter.strip.include?(" ") && !(parameter.include?(":") || parameter.include?("="))
         raise_parser_type_error("parameter_name_with_space", { "parameters" => parameters, "parameter_name" => parameter })
       end
     end

@@ -10,7 +10,7 @@ class JekyllAwesomeParser
     return false if string == "false"
     return true if string == "true"
     # Small workaround, since in the optional_arg_lookup the argument can't be nil
-    return :nil if string == "nil" and convert_nil == true
+    return :nil if (string == "nil") && (convert_nil == true)
     return string
   end
 
@@ -19,7 +19,7 @@ class JekyllAwesomeParser
     # If the optional argument is enclosed between quotes:
     is_string = ["\"", "\'"].include?(argument[0]) and ["\"", "\'"].include?(argument[-1])
     is_list = argument[0] == "[" and argument[-1] == "]"
-    if is_string or is_list
+    if is_string || is_list
       return parse_optional_argument(parameters, full_parameter, argument)
     else
       return convert_type(argument, convert_nil=true)
@@ -55,10 +55,10 @@ class JekyllAwesomeParser
       raise_parser_type_error("wrong_type", error_args)
     end
 
-    raise_error.call if type_name == "num" and !([Integer, Float].include? user_type)
-    raise_error.call if type_name == "list" and !(user_type == Array)
+    raise_error.call if (type_name == "num") && !([Integer, Float].include? user_type)
+    raise_error.call if (type_name == "list") && !(user_type == Array)
 
-    if type_name == "str" and !(user_type == String)
+    if (type_name == "str") && !(user_type == String)
       if [TrueClass, FalseClass].include? user_type
         raise_error.call "(If you wanted to pass '#{@tmp_string}' as a string, you'll have to put it\n"+
                         "between quotes (\"\" or ''))"
@@ -67,9 +67,9 @@ class JekyllAwesomeParser
       end
     end
 
-    if ["bool", "boolean"].include? type_name and !([TrueClass, FalseClass].include? user_type)
+    if ["bool", "boolean"].include?(type_name) && !([TrueClass, FalseClass].include? user_type)
       # If the user passed "true" or "false" as a string, show an note:
-      if user_type == String and (@tmp_string == "true" or @tmp_string == "false")
+      if (user_type == String) && ((@tmp_string == "true") || (@tmp_string == "false"))
         quoted_arg = { "\"" => "\"#{@tmp_string}\"", "\'" => "\'#{@tmp_string}\'" }[@flags["quote"]]
         raise_error.call "(Side note, maybe you want to get rid of the quotes of the input?\n"+
                           "#{quoted_arg} would be #{@tmp_string})"

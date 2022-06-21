@@ -5,7 +5,7 @@ class JekyllAwesomeParser
     @tmp_string = @tmp_string.strip
 
     # If the parser is set to automatically convert types, or the parameter has a type:
-    if @convert_types or @type_lookup[@current_parameter]
+    if @convert_types || @type_lookup[@current_parameter]
       argument = convert_type(@tmp_string)
     else
       argument = @tmp_string
@@ -38,9 +38,7 @@ class JekyllAwesomeParser
           return false if check_colon[2] == peek_pointer
           return true
         end
-        if check_colon[1] == "match"
-          peek_pointer = check_colon[2]
-        end
+        peek_pointer = check_colon[2] if check_colon[1] == "match"
       else
         return false
       end
@@ -54,9 +52,7 @@ class JekyllAwesomeParser
     peek_after_result = peek_after(@user_input, pointer, "right", target=[" ", ","], target_after="", stop=["\\", "\"", "'"])
     if !["stop", "end_of_string"].include?(peek_after_result[1]) || !["stop", "end_of_string"].include?(peek_result[1])
       check_colon = peek_until(@user_input, pointer, "right", ":", stop=[" ", ","])
-      if ["stop", "end_of_string"].include?(check_colon[1])
-        return true
-      end
+      return true if ["stop", "end_of_string"].include?(check_colon[1])
     end
     return false
   end
@@ -83,9 +79,7 @@ class JekyllAwesomeParser
     if @current_parameter[0] != "*"
       # If there are any remaining positional arguments:
       if check_remaining_quoteless_args(pointer) || check_remaining_quote_args.call()
-        if @arg_pointer == @parameters.size - 1
-          raise_parser_error(pointer, "TooMuchArgumentsError")
-        end
+        raise_parser_error(pointer, "TooMuchArgumentsError") if @arg_pointer == @parameters.size - 1
         # If the exact next item in the input is a positional argument
         if check_next_quoteless_arg(pointer) || check_next_quote_args.call()
           @arg_pointer += 1
@@ -93,7 +87,7 @@ class JekyllAwesomeParser
         end
         return
       end
-      if @arg_pointer != @parameters.size - 1 and !check_every_optional_args.call()
+      if (@arg_pointer != @parameters.size - 1) && !check_every_optional_args.call()
         raise_parser_error(pointer, "NotEnoughArgumentsError")
       end
     end
@@ -105,7 +99,7 @@ class JekyllAwesomeParser
     if @current_parameter[0] == "*"
       # Loop over the rest of the parameters and check if they're optional arguments
       for parameter in @parameters[(@parameters.index(@current_parameter) + 1)..-1]
-        if parameter.class == String and !parameter.include?("=")
+        if (parameter.class == String) && !parameter.include?("=")
           raise_parser_error(pointer, "MissingKeywordArgumentError")
         end
       end
@@ -134,8 +128,8 @@ class JekyllAwesomeParser
       @flags["matching"], @flags["quote"] = ["argument", letter]
 
       # If there are no remaining quotes, throw an error
-      if peek_until(@user_input, pointer, "right", ["'", "\""])[1] != "match" and
-      peek(@user_input, pointer, "right", ["'", '"'])[1] != "match"
+      if (peek_until(@user_input, pointer, "right", ["'", "\""])[1] != "match") &&
+      (peek(@user_input, pointer, "right", ["'", '"'])[1] != "match")
         raise_parser_error(pointer, "StringNotClosedError")
       end
     end

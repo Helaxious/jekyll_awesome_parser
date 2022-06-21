@@ -49,6 +49,7 @@ class TestParser < Minitest::Test
       "result" => nil, "exception" => get_parser_error("StringNotClosedError") }]
     _test(tests, "test_positional_arguments_and_star_args_exceptions")
   end
+  
   def test_mix_double_single_no_quotes_positional
     tests = [
       { "args" => ["*recipe"], "input" => "\"potato\" \'milk\'",

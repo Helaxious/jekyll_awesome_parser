@@ -62,7 +62,7 @@ class JekyllAwesomeParser
     check_empty_input(0, parameters, input)
 
     for letter, pointer in @user_input.split("").each_with_index
-      if ['"', "'"].include?(letter) and @flags["matching"] != "list"
+      if ['"', "'"].include?(letter) && (@flags["matching"] != "list")
         check_quoted_strings(pointer, letter)
         next # Don't run the code below, and jump to the next iteration
       end
@@ -86,9 +86,7 @@ class JekyllAwesomeParser
       end
 
       # Checking for a stray colon
-      if letter == ":" and @flags["matching"].nil?
-        raise_parser_error(pointer, "InvalidKeywordError")
-      end
+      raise_parser_error(pointer, "InvalidKeywordError") if (letter == ":") && @flags["matching"].nil?
 
       if @flags["matching"].nil? && ![" ", ","].include?(letter)
         raise_parser_error(pointer, "InvalidCharacterError") if letter == "\\"
@@ -108,9 +106,7 @@ class JekyllAwesomeParser
         # Checking for a keyword argument
         else
           # Keyword arguments don't make sense in lists, raise an error if there is one
-          if @matching_list == true
-            raise_parser_error(pointer, "KeywordArgumentInListError")
-          end
+          raise_parser_error(pointer, "KeywordArgumentInListError") if @matching_list == true
 
           @flags["matching"] = "keyword"
           @tmp_string += letter
