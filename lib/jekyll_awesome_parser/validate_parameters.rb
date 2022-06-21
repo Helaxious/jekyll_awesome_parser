@@ -23,8 +23,8 @@ class JekyllAwesomeParser
     unless type_list.include?(type_name)
       number_note = ["int", "float", "integer"].include? type_name
       raise_parser_type_error("invalid_type", { "parameters" => parameters, "parameter_name" => parameter,
-                                              "type_name" => type_name, "number_note" => number_note,
-                                              "type_list" => type_list })
+                                                "type_name" => type_name, "number_note" => number_note,
+                                                "type_list" => type_list })
     end
   end
 
@@ -159,7 +159,7 @@ class JekyllAwesomeParser
 
       # If the parameter is the wrong type
       raise_parser_type_error("wrong_parameter_type", { "parameters" => parameters, "parameter_name" => parameter,
-                                                    "parameter_type" => parameter.class }) if parameter.class != String
+                                                        "parameter_type" => parameter.class }) if parameter.class != String
 
       parameter = parameter.strip
       if %w[0 1 2 3 4 5 6 7 8 9].include? parameter[0]

@@ -15,6 +15,7 @@ class TestParser < Minitest::Test
     [["abcdcba", 2, "right", ["c", "d", "a"], ""],     [true, "match", 3]],
     [["abcdcba", 2, "right", "", ["c", "d", "a"], ""], [false, "stop", 3]]
     ]
+    
     for (input, result) in tests
       string, pointer, direction, target, stop = input
       assert_equal(@@parser.peek(string, pointer, direction, target, stop), result)
@@ -32,6 +33,7 @@ class TestParser < Minitest::Test
     [["abc  d  cba", 10, "left", "d", ""], [true, "match", 5]],
     [["abc  d  cba", 10, "left", "d", " "], [false, "stop", 7]]
     ]
+
     for (input, result) in tests
       assert_equal(@@parser.peek_until(*input), result)
     end
@@ -47,6 +49,7 @@ class TestParser < Minitest::Test
     [[" aaaaaaa ", 5, "right", "a"], [true, "match", 8]],
     [[" aaaaaaa ", 5, "left", "a"], [true, "match", 0]]
     ]
+
     for (input, result) in tests
       assert_equal(@@parser.peek_until_not(*input), result)
     end
@@ -60,6 +63,7 @@ class TestParser < Minitest::Test
     [["  aaaaaaa", 5, "left", "a", " "],   [true, "match", 1]],
     [["aa     ", 5, "left", " ", "a"],     [true, "match", 1]]
     ]
+
     for (input, result) in tests
       string, pointer, direction, target, target_after = input
       assert_equal(@@parser.peek_after(string, pointer, direction, target, target_after), result)

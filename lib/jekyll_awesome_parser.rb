@@ -48,9 +48,9 @@ class JekyllAwesomeParser
 
     error = ParserErrors.const_get(error)
     raise error.new({ "user_input": @user_input, "pointer": pointer, "parameters": @parameters,
-                    "clean_parameters": @clean_lookup.keys,
-                    "parsed_result": clean_parameters(order_result(@parameters, @parsed_result)),
-                    "matching_list": @matching_list }, args)
+                      "clean_parameters": @clean_lookup.keys,
+                      "parsed_result": clean_parameters(order_result(@parameters, @parsed_result)),
+                      "matching_list": @matching_list }, args)
   end
 
   def raise_parser_type_error(error, args=nil)

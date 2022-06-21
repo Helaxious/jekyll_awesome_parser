@@ -50,10 +50,10 @@ class JekyllAwesomeParser
 
     raise_error = lambda do |extra_info=nil|
       error_args = { "parameter_name" => parameter_name, "user_input" => @user_input, "correct_type" => correct_type,
-                    "wrong_type" => user_type, "full_parameter" => full_parameter, "additional_info" => extra_info,
-                    "pointer" => pointer, "clean_parameters" => @clean_lookup.keys, "parameters" => @parameters,
-                    "parsed_result" => clean_parameters(order_result(@parameters, @parsed_result)),
-                    "user_arg" => @tmp_string, "matching_list" => @matching_list }
+                     "wrong_type" => user_type, "full_parameter" => full_parameter, "additional_info" => extra_info,
+                     "pointer" => pointer, "clean_parameters" => @clean_lookup.keys, "parameters" => @parameters,
+                     "parsed_result" => clean_parameters(order_result(@parameters, @parsed_result)),
+                     "user_arg" => @tmp_string, "matching_list" => @matching_list }
 
       raise_parser_type_error("wrong_type", error_args)
     end
