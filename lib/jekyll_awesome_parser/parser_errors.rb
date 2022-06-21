@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 def get_debug_info(info, args)
-  message = ["User Input: #{info[:user_input]}", (" " * (info[:pointer] + 12)) + "^",
+  message = ["User Input: #{info[:user_input]}", "#{' ' * (info[:pointer] + 12)}^",
              "Argument Names: #{info[:clean_parameters]}"].join("\n")
 
-  args[:extra_info].each { |info| message += "\n" + info } if (args != nil) && args[:extra_info]
+  args[:extra_info].each { |info| message += "\n#{info}" } if (args != nil) && args[:extra_info]
 
   message += ["\n\n[Info]", "parameters: #{info[:parameters]}",
               "Parsed Result: #{info[:parsed_result]}"].join("\n")
@@ -26,12 +26,12 @@ def pretty_print_error(debug_message, debug_context, print_errors)
   space = " " * 19
   if debug_context
     page = debug_context.registers[:page]
-    path = "\n" + space + "[Post]: '#{page[:path]}' "
+    path = "\n#{space}[Post]: '#{page[:path]}' "
   end
 
   message = (" "*5) + "AwesomeParser: [Error]:#{path}"
-  message += "\n" + space + "[Message]:"
-  debug_message.split("\n").each { |p| message += "\n" + space + p }
+  message += "\n#{space}[Message]:"
+  debug_message.split("\n").each { |p| message += "\n#{space}#{p}" }
   print(message)
 end
 
@@ -57,8 +57,8 @@ class JekyllAwesomeParser
       def initialize(info, args)
         debug_info = get_debug_info(info, args)
 
-        pretty_print_error(@message + "\n\n" + debug_info, ParserErrors.debug_context, ParserErrors.print_errors)
-        super((@message + "\n\n") + debug_info)
+        pretty_print_error("#{@message}\n\n#{debug_info}", ParserErrors.debug_context, ParserErrors.print_errors)
+        super("#{@message}\n\n" + debug_info)
       end
     end
 
@@ -153,7 +153,7 @@ class JekyllAwesomeParser
     end
 
     def self.raise_type_error(message, args, developer_error=true)
-      args["extra_info"].each { |info| message += "\n" + info } if (args != nil) && args["extra_info"]
+      args["extra_info"].each { |info| message += "\n#{info}" } if (args != nil) && args["extra_info"]
 
       developer_note = "\n\n(This is a developer error, this error should be fixed by the\n" \
                   "developers and not the user, if you're the user, contact the developers!)"
@@ -225,10 +225,12 @@ class JekyllAwesomeParser
       check_args_is_nil(args)
       message = "[Invalid Type] Provided parameter '#{args['parameter_name']}' in #{args['parameters']} has type '#{args['type_name']}', which is not a valid type. Maybe you mispelled it?\n\n"
 
-      message += "(It was detected that you wanted to pass the type as an int/float.\n"\
-                  "For simplicity, there is no differentiation between ints and floats.\n"\
-                  "To pass a number type, use 'num' (eg: 'arg: num'). It will accept ints and floats.\n"\
-                  "And it will return either a int or a float.)\n\n" if args["number_note"] == true
+      if args["number_note"] == true
+        message += "(It was detected that you wanted to pass the type as an int/float.\n"\
+                    "For simplicity, there is no differentiation between ints and floats.\n"\
+                    "To pass a number type, use 'num' (eg: 'arg: num'). It will accept ints and floats.\n"\
+                    "And it will return either a int or a float.)\n\n"
+      end
       message += "(All valid types: #{args['type_list']})"
       raise_type_error(message, args, developer_error=true)
     end
@@ -283,10 +285,10 @@ class JekyllAwesomeParser
 
       message = "[Wrong Type] Argument '#{arg_name}' (which was provided as '#{user_arg}') should be #{correct_type}, not #{wrong_type}\n"\
                 "User Input: #{user_input}\n"\
-                "#{(' ' * (pointer + 12)) + "^\n"}"\
+                "#{"#{' ' * (pointer + 12)}^\n"}"\
                 "Argument Names: #{clean_parameters}"
 
-      message += "\n" + args["additional_info"] if (args != nil) && args["additional_info"]
+      message += "\n#{args['additional_info']}" if (args != nil) && args["additional_info"]
 
       message += ["\n\n[Info]",
                   "parameters: #{parameters}", "Parsed Result: #{parsed_result}"].join("\n")

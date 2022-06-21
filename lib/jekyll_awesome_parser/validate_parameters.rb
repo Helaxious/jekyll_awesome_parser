@@ -164,8 +164,10 @@ class JekyllAwesomeParser
       end
 
       # If the parameter is the wrong type
-      raise_parser_type_error("wrong_parameter_type", { "parameters" => parameters, "parameter_name" => parameter,
-                                                        "parameter_type" => parameter.class }) if parameter.class != String
+      if parameter.class != String
+        raise_parser_type_error("wrong_parameter_type", { "parameters" => parameters, "parameter_name" => parameter,
+                                                          "parameter_type" => parameter.class })
+      end
 
       parameter = parameter.strip
       if %w[0 1 2 3 4 5 6 7 8 9].include? parameter[0]

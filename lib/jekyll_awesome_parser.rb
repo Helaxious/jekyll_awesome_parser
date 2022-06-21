@@ -45,7 +45,6 @@ class JekyllAwesomeParser
 
   # Grabs a specified error from the ParserErrors class, then returns the error
   def raise_parser_error(pointer, error, args=nil)
-
     error = ParserErrors.const_get(error)
     raise error.new({ "user_input": @user_input, "pointer": pointer, "parameters": @parameters,
                       "clean_parameters": @clean_lookup.keys,

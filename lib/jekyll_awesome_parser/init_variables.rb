@@ -25,11 +25,7 @@ class JekyllAwesomeParser
     @parameters = parameters
     @convert_types = convert_types
 
-    if @deactivate_print_errors
-      @print_errors = false
-    else
-      @print_errors = print_errors
-    end
+    @print_errors = if @deactivate_print_errors then false else print_errors end
 
     ParserErrors.set_vars(@debug_context, @print_errors)
 

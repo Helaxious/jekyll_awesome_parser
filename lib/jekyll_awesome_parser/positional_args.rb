@@ -7,11 +7,8 @@ class JekyllAwesomeParser
     @tmp_string = @tmp_string.strip
 
     # If the parser is set to automatically convert types, or the parameter has a type:
-    if @convert_types || @type_lookup[@current_parameter]
-      argument = convert_type(@tmp_string)
-    else
-      argument = @tmp_string
-    end
+    argument = if @convert_types || @type_lookup[@current_parameter]
+                 then convert_type(@tmp_string) else @tmp_string end
 
     check_user_type(pointer)
     @parsed_result[@current_parameter] += [argument]
@@ -35,8 +32,8 @@ class JekyllAwesomeParser
       # Checking if the match is zero length
       return false if peek_after_result[2] == peek_pointer && peek_result[2] == peek_pointer
 
-      if !["stop", "end_of_string"].include?(
-        peek_after_result[1]) || !["stop", "end_of_string"].include?(peek_result[1])
+      after_is_stop_end = !["stop", "end_of_string"].include?(peek_after_result[1])
+      if after_is_stop_end || !["stop", "end_of_string"].include?(peek_result[1])
 
         check_colon = peek_until(user_input, peek_pointer, "right", ":", stop=[" ", ","])
         if ["stop", "end_of_string"].include?(check_colon[1])
@@ -65,7 +62,7 @@ class JekyllAwesomeParser
   end
 
   # Bumps current parameter to the next parameter in the parameters list, and does error checking too
-  def bump_current_parameter(pointer, letter)
+  def bump_current_parameter(pointer, _)
     check_remaining_quote_args = lambda do
       return peek_until(@user_input, pointer, "right", ["\"", "'"])[1] == "match"
     end

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class JekyllAwesomeParser
-  def validate_keyword(letter, pointer, keyword)
+  def validate_keyword(_letter, pointer, keyword)
     if peek_until_not(@user_input, pointer, "right", target=[" "])[1] == "no_match"
       raise_parser_error(pointer, "EmptyKeywordError", { "extra_info": ["Empty Keyword: '#{keyword}'"] })
     end
@@ -33,8 +33,8 @@ class JekyllAwesomeParser
       validate_keyword(letter, pointer, keyword)
 
       # If there's quoted arguments or quoteless arguments to the left of the argument, bump the argument pointer
-      if peek_until(@user_input, pointer, "left", target=["\"", "'"]
-                    )[1] == "match" || check_remaining_quoteless_args(0, @user_input[0...pointer] + ":")
+      quoted_args_behind = peek_until(@user_input, pointer, "left", target=["\"", "'"])[1] == "match"
+      if quoted_args_behind || check_remaining_quoteless_args(0, "#{@user_input[0...pointer]}:")
         @arg_pointer += 1
       end
 
