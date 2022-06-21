@@ -15,7 +15,7 @@ class TestParser < Minitest::Test
     { "args" => ["*arg1", "*arg2"], "input" => "arg2: \"jokes\" \"games\" arg1: \"fun_facts\" \"web_dev\"",
       "result" => { "arg1" => ["fun_facts", "web_dev"], "arg2" => ["jokes", "games"] }, "exception" => nil }
     ]
-    
+
     _test(tests, "test_keyword_arguments_and_star_args")
   end
 

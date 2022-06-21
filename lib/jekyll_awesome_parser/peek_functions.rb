@@ -7,9 +7,10 @@ class JekyllAwesomeParser
     target = Array(target) if target.instance_of?(String)
 
     direction = ({ "left" => -1, "right" => 1 })[direction]
-    if (0 <= pointer + direction) && (pointer + direction <= string.size - 1)
+    if (pointer + direction >= 0) && (pointer + direction <= string.size - 1)
       return [true, "match", pointer + direction] if target.include?(string[pointer + direction])
-      return [false, "stop", pointer + direction] if stop != nil && (stop.include?(string[pointer + direction]))
+      return [false, "stop", pointer + direction] if stop != nil && stop.include?(string[pointer + direction])
+
       return [false, "no_match", pointer + direction]
     end
     return [false, "end_of_string", string.size - 1]
@@ -53,6 +54,7 @@ class JekyllAwesomeParser
 
       is_stop = stop.include?(string[second_peek[2]])
       return [false, "stop", second_peek[2]] if is_stop
+
       return [target_after.include?(string[second_peek[2]]), "match", second_peek[2]]
     else
       return [false, "no_match", pointer]

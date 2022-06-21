@@ -15,7 +15,7 @@ class TestParser < Minitest::Test
     [["abcdcba", 2, "right", ["c", "d", "a"], ""],     [true, "match", 3]],
     [["abcdcba", 2, "right", "", ["c", "d", "a"], ""], [false, "stop", 3]]
     ]
-    
+
     for (input, result) in tests
       string, pointer, direction, target, stop = input
       assert_equal(@@parser.peek(string, pointer, direction, target, stop), result)

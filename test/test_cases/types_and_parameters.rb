@@ -230,7 +230,7 @@ class TestParser < Minitest::Test
     [["arg1 = '\"potato'"]],
     [["arg1 = \"\'\\\"potato\\\"\'\""]]
     ]
-    
+
     _test_validate_parameters(tests)
   end
 end

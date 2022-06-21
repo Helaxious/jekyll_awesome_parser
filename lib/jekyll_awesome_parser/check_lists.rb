@@ -16,7 +16,8 @@ class JekyllAwesomeParser
 
     tmp_parser.deactivate_print_errors if @deactivate_print_errors
 
-    parsed_list = tmp_parser.parse_input(["*list_arguments"], @tmp_string, convert_types=@convert_types, print_errors=@print_errors)
+    parsed_list = tmp_parser.parse_input(["*list_arguments"], @tmp_string, convert_types=@convert_types,
+                                         print_errors=@print_errors)
 
     @current_parameter = @clean_lookup[@current_parameter] if @clean_lookup.include?(@current_parameter)
     @parsed_result[@current_parameter] += [parsed_list["list_arguments"]]

@@ -90,7 +90,7 @@ class TestParser < Minitest::Test
       { "args" => ["arg1=something", "arg2", "arg3"], "input" => "super",
         "result" => nil, "exception" => get_parser_error("NotEnoughArgumentsError") }
     ]
-    
+
     _test(tests, "test_keyword_defaults_arguments")
   end
 end

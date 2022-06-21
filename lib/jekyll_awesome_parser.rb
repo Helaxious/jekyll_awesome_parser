@@ -81,6 +81,7 @@ class JekyllAwesomeParser
 
         # Ignore if the escape character is not being escaped
         next if peek(input, pointer, "left", "\\")[1] != "match" && letter == "\\"
+
         @tmp_string += letter
         next
       end

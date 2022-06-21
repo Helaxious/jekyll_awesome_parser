@@ -13,7 +13,7 @@ class JekyllAwesomeParser
     return true if string == "true"
     # Small workaround, since in the optional_arg_lookup the argument can't be nil
     return :nil if (string == "nil") && (convert_nil == true)
-    
+
     return string
   end
 

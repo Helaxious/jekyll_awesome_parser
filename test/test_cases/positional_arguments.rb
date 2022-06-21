@@ -75,7 +75,7 @@ class TestParser < Minitest::Test
     { "args" => ["arg1", "arg2", "arg3"], "input" => "potato \"milk\" tomato",
       "result" => { "arg1" => ["potato"], "arg2" => ["milk"], "arg3" => ["tomato"] }, "exception" => nil }
     ]
-    
+
     _test(tests, "test_mix_double_single_no_quotes_positional")
   end
 end

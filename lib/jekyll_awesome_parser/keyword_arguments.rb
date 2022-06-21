@@ -33,7 +33,8 @@ class JekyllAwesomeParser
       validate_keyword(letter, pointer, keyword)
 
       # If there's quoted arguments or quoteless arguments to the left of the argument, bump the argument pointer
-      if peek_until(@user_input, pointer, "left", target=["\"", "'"])[1] == "match" || check_remaining_quoteless_args(0, @user_input[0...pointer] + ":")
+      if peek_until(@user_input, pointer, "left", target=["\"", "'"]
+                    )[1] == "match" || check_remaining_quoteless_args(0, @user_input[0...pointer] + ":")
         @arg_pointer += 1
       end
 

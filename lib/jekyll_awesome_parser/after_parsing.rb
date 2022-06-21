@@ -20,6 +20,7 @@ class JekyllAwesomeParser
   # If there`s no user input, check if every parameter is optional, else, throw an error
   def check_empty_input(pointer, parameters, input)
     return if (input != "") || (@matching_list != nil)
+
     for method in parameters
       is_optional = false
       for letter in method.split("")

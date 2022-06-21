@@ -2,12 +2,12 @@
 
 def get_debug_info(info, args)
   message = ["User Input: #{info[:user_input]}", (" " * (info[:pointer] + 12)) + "^",
-  "Argument Names: #{info[:clean_parameters]}"].join("\n")
+             "Argument Names: #{info[:clean_parameters]}"].join("\n")
 
   args[:extra_info].each { |info| message += "\n" + info } if (args != nil) && args[:extra_info]
 
   message += ["\n\n[Info]", "parameters: #{info[:parameters]}",
-            "Parsed Result: #{info[:parsed_result]}"].join("\n")
+              "Parsed Result: #{info[:parsed_result]}"].join("\n")
 
   # FIXME
   if info[:matching_list] != nil
@@ -289,7 +289,7 @@ class JekyllAwesomeParser
       message += "\n" + args["additional_info"] if (args != nil) && args["additional_info"]
 
       message += ["\n\n[Info]",
-      "parameters: #{parameters}", "Parsed Result: #{parsed_result}"].join("\n")
+                  "parameters: #{parameters}", "Parsed Result: #{parsed_result}"].join("\n")
 
       # FIXME
       if args["matching_list"] != nil

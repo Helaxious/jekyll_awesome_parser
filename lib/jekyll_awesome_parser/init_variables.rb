@@ -8,13 +8,14 @@ class JekyllAwesomeParser
     for parameter in parameters
       @type_lookup[parameter] = parameter.split(":")[1].strip if parameter.include? ":"
 
-      next unless (parameter.include? "=")
+      next unless parameter.include? "="
+
       if parameter.include? ":"
         @optional_arg_lookup[parameter] = convert_optional_argument(parameters,
-                                            parameter, parameter.split("=")[1].split(":")[0].strip)
+                                                                    parameter, parameter.split("=")[1].split(":")[0].strip)
       else
         @optional_arg_lookup[parameter] = convert_optional_argument(parameters,
-                                            parameter, parameter.split("=")[1].strip)
+                                                                    parameter, parameter.split("=")[1].strip)
       end
     end
   end
