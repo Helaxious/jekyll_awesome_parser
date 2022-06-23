@@ -13,7 +13,7 @@ require_relative "test_cases/types_and_keyword_defaults"
 class TestParser < Minitest::Test
   @@parser = JekyllAwesomeParser.new
   @@parser.deactivate_print_errors
-  @@display_errors = false
+  @@display_errors = true
   @@parser_errors = JekyllAwesomeParser::ParserErrors
 
   def get_parser_error(error)

@@ -279,19 +279,20 @@ class JekyllAwesomeParser
 
     def self.wrong_type(args)
       check_args_is_nil(args)
-      arg_name, user_input, correct_type = args["arg_name"], args["user_input"], args["correct_type"]
+      parameter_name, user_input, correct_type = args["parameter_name"], args["user_input"], args["correct_type"]
       wrong_type, pointer, clean_parameters = args["wrong_type"], args["pointer"], args["clean_parameters"]
       parameters, parsed_result, user_arg = args["parameters"], args["parsed_result"], args["user_arg"]
 
-      message = "[Wrong Type] Argument '#{arg_name}' (which was provided as '#{user_arg}') should be #{correct_type}, not #{wrong_type}\n"\
+      message = "[Wrong Type] Parameter '#{parameter_name}' (which was provided as '#{user_arg}') should be #{correct_type}, not #{wrong_type}\n"\
                 "User Input: #{user_input}\n"\
                 "#{"#{' ' * (pointer + 12)}^\n"}"\
-                "Argument Names: #{clean_parameters}"
+                "Parameter names: #{clean_parameters}"
 
       message += "\n#{args['additional_info']}" if (args != nil) && args["additional_info"]
 
       message += ["\n\n[Info]",
-                  "parameters: #{parameters}", "Parsed Result: #{parsed_result}"].join("\n")
+                  "Parsed Result: #{parsed_result}",
+                  "Raw Parameters: #{parameters}"].join("\n")
 
       # FIXME
       if args["matching_list"] != nil
