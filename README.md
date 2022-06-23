@@ -1,6 +1,6 @@
 # Jekyll Awesome Parser
 
-![](robot_banner.png)
+![Banner, a robot with laser eyes, parsing a jekyll tag reading 'tag input'](robot_banner.png)
 
 An Awesome gem for Jekyll Plugin makers to completely parse your arguments!
 
@@ -11,7 +11,7 @@ jekyll_awesome_parser is a complete argument parser for Jekyll plugins, packed w
 Let's say you have these parameters:
 
 ```ruby
-parameters = ["*cat_breed", "size=100", "eye_color: list", "cute=true: bool"]
+parameters = ["*cat_breed", "image_size=100", "eye_color: list", "cute=true: bool"]
 ```
 
 and the user passes this as the input:
@@ -23,12 +23,11 @@ and the user passes this as the input:
 jekyll_awesome_parser will parse the input, and return a completely parsed Hash:
 
 ```ruby
-{"cat_breed" => ["egyptian"], "size" => [200],
-"eye_color" => [["red", "blue", "yellow"]],
-"cute" => [true]}
+{"cat_breed" => ["egyptian"], "image_size" => [200],
+"eye_color" => [["red", "blue", "yellow"]], "cute" => [true]}
 ```
 
-To use it, simply import the parser, initialize it, and use the `parse_input` method.
+To use it, simply import the parser, initialize it, and use the `parse_input` method inside your plugin.
 
 ```ruby
 # Import the gem
@@ -37,23 +36,29 @@ require "jekyll_awesome_parser"
 # require_relative "jekyll_awesome_parser/lib/jekyll_awesome_parser.rb"
 
 def initialize(tag_name, input, tokens)
+  # Instantiate the parser
   parser = JekyllAwesomeParser.new
+  input = '"egyptian" "siamese" 500 eye_color: ["brown", purple \'green\']'
 
-  parameters = ["*cat_breed", "size=100", "eye_color: list", "cute=true: bool"]
+  parameters = ["*cat_breed", "image_size=100", "eye_color: list", "cute=true: bool"]
   parsed_input = parser.parse_input(parameters, input)
+
+  cat_breeds = parsed_input["cat_breed"] # ["egyptian", "siamese"]
+  image_size = parsed_input["image_size"][0] # 500
+  is_cat_cute = parsed_input["cute"][0] # true
 end
 ```
 
 ## Why?
 
-As to my knowledge, there is no good way to parse the user input with the Liquid tags or filters, [it seems](https://stackoverflow.com/questions/29480950/custom-liquid-tag-with-two-parameters) [possible](https://stackoverflow.com/questions/40734882/pass-multiple-argument-to-custom-plugin-in-jekyll) to do so, but it is very limited, and kinda clunky, so I created a parser, with a loose syntax with a lot of features, to do this for me.
+As to my knowledge, there is no good way to parse the user input with the Liquid tags or filters, [it seems](https://stackoverflow.com/questions/29480950/custom-liquid-tag-with-two-parameters) [possible](https://stackoverflow.com/questions/40734882/pass-multiple-argument-to-custom-plugin-in-jekyll) to do so, but it is very limited, and kinda clunky, so I created a parser, with a loose syntax with a lot of features to do this for me.
 
 ## Setting the Parameters
 
 To specify the parameters, simply pass a list like this:
 
 ```ruby
-parameters = ["arg1", "*arg2", "arg3=12: num"]
+parameters = ["shirt_color=blue", "pants_color=brown", "accessories: list"]
 ```
 
 Here's what you can do with them:
@@ -62,10 +67,10 @@ Here's what you can do with them:
   Define an parameter as a splat by putting a star (asterisk) before the variable name:
 
   ```ruby
-  parameters = ["*var1"]
+  parameters = ["*splat_argument"]
   ```
 
-  One small difference from the normal splats, is that this requires being given *at least one* argument.
+  One small difference from normal splats, is that it requires being given *at least one* argument.
 
   #### Example:
   ```ruby
@@ -83,7 +88,7 @@ Here's what you can do with them:
   ```
 
 - ### Keyword Defaults (optional arguments)
-  Keyword defaults are parameters that the user doesn't need to provide, and if that's the case, it will default to some specified value:
+  Keyword defaults are parameters that are optional to the user, when the user doesn't provide an argument, the parameter will default to some specified value:
 
   ```ruby
   parameters = ["arg1=tomato", "arg2=Cheese", "arg3=wont_default"]
@@ -91,35 +96,35 @@ Here's what you can do with them:
   # {"arg1" => ["tomato"], "arg2" => ["Cheese"], "arg3" => ["pineapple"]}
   ```
 
-  The syntax is simple, put a `=` after the parameter name, and put the default argument, the default argument can be either a `bool`, `num`, `str` or a `list` (check the Syntax section for more):
+  The syntax is simple, put a `=` after the parameter name (or before the type), and put the default argument value, this value can be either a `str`, `num`, `bool` or a `list` (check the Syntax section for more):
 
   ```ruby
-  parameters = ["coolness=true"]
-  parameters = ["age=35"]
   parameters = ["chef_name=\"Peter Parker\""]
+  parameters = ["age=35"]
+  parameters = ["coolness=true"]
   parameters = ["pizza_ingredients=[tomato cheese pineapple]"]
   ```
 
 - ### Types
 
-  You're able to specify the input type by putting a colon after the parameter, and putting the name of the type:
+  You're able to specify the parameter type by putting a colon after the parameter name (or after the default argument), and putting the name of the type:
 
   ```ruby
   parameters = ["chef_name: str", "age: num", "delivery: bool", "recipe: list"]
   ```
 
-  Here are the list of the valid names you can pass as type:
+  Here are the list of the type names you can pass:
 
   - String: `string`, `str`
   - Number: `number`, `num`
   - Boolean: `boolean`, `bool`
   - List: `list`, `array`
 
-  This will require the user to pass the appropriate type, and will throw an error in case the argument passed was the wrong type.
+  Specifying the type will require the user to pass an argument with the appropriate type, and will throw an error in case the argument was the wrong type.
 
-  `parse_input` by default converts the user types automatically, but you can disable it by passing the keyword argument `convert_types=false`.
+  `parse_input` by default converts the user types automatically, but you can disable it by passing the keyword argument `convert_types=false` to the function.
 
-  But note that even if you turn automatic type conversion off, the argument will still be converted if the parameter has an specified type.
+  But note that even if you turn automatic type conversion off, the argument will still be converted individually for parameters that have a type.
 
   Also, if you want both a type and a keyword default in your parameter, you need to do it like this, put `=` and a default argument right after the parameter name, then a `:` and the type name:
 
@@ -131,7 +136,7 @@ Here's what you can do with them:
 
 `jekyll_awesome_parser` has a a very simple and loose syntax:
 
-Positional arguments are arguments that are assigned by their position, passing an argument without an keyword makes it positional:
+Positional arguments are arguments that are assigned by their position:
 
 ```ruby
 parameters = ["arg1", "arg2", "arg3"]
@@ -139,7 +144,7 @@ input = `value3 value2 value1`
 # {"arg1" => ["value3"], "arg2" => ["value2"], "arg1" => ["arg1"]}
 ```
 
-Keyword arguments are arguments that are assigned by their keyword:
+Keyword arguments are arguments that are assigned by their keyword, simply put the parameter name with a colon (with no spaces in-between) and place your arguments right after:
 
 ```ruby
 parameters = ["arg1", "arg2", "arg3"]
@@ -147,15 +152,15 @@ input = `arg2: two arg1: one arg3: three`
 # {"arg1" => ["one"], "arg2" => ["two"], "arg3" => ["three"]}
 ```
 
-Commas and quotes around strings are optional, this means that this is valid too:
+Commas are optional, as well as quotes on strings, this means that this is valid too:
 
 ```ruby
 parameters = ["arg1", "arg2", "arg3"]
-input = `"one fish", 'two fish', red_fish`
+input = `"one fish", 'two fish' red_fish`
 # {"arg1" => ["one fish"], "arg2" => ["two fish"], "arg1" => ["red_fish"]}
 ```
 
-Currently, there are four types you can pass, strings, booleans, numbers and lists.
+Currently, there are four argument types you can pass, strings, booleans, numbers and lists.
 
 ```ruby
 # Like mentioned before, strings can have double quotes, single quotes, or have no quotes at all
@@ -164,21 +169,29 @@ strings = `"double_quotes" 'single_quotes' no_quotes`
 # Numbers can be both int or floats
 numbers = `123 321 12.1111 3.141592`
 
-# Booleans needs to be in lowercase either, 'true' or 'false'
+# Booleans needs to be in lowercase and are either 'true' or 'false'
 booleans = `true false`
 
 # Pass a list by surrounding it in brackets
-# Lists can be nested, and even be empty. But they can't have keyword arguments.
+# Lists can be nested, and also empty. But you can't place keyword arguments inside them.
 lists = `["abc" 123 true [nested lists!] []]`
 ```
 
-## Tricky cases
+## Examples
 
-Although I do my best to make this parser as easy and intuitive as possible both for the user, and for plugin developers, there are some tricky cases you may want to be aware of:
+If you still are in doubt on how to use this parser, or you prefer learning with pratical examples, you can check the [examples](readme_examples/examples.md) folder for more.
 
 ## Known issues
 
 Some known issues that needs to be fixed later that you should be aware of:
+
+- Error messages details are generally incomplete when it happens while parsing a list
+
+- This shouldn't really occur:
+    ```ruby
+    parser.parse_input(["arg1", "arg2"], "arg2: 123 potato")
+    # {"arg1"=>[], "arg2"=>[123, "potato"]}
+    ```
 
 ## Installing and using it
 
@@ -197,7 +210,7 @@ require "jekyll_awesome_parser"
 parser = JekyllAwesomeParser.new
 ```
 
-Or download the parser and import it locally with `require_relative`, all the parser logic is inside the `lib` folder:
+Or download the parser and import it locally with `require_relative`, all the parser logic is inside the `lib` folder, so you can get rid of the other files (except the license, you have to keep it):
 
 ```
 # File structure
@@ -234,8 +247,8 @@ input = "plugin_name: jekyll_awesome_parser, awesome: true"
 # Parser will return a hash:
 parsed_result = parser.parse_input(parameters, input)
 
-plugin_name = parsed_result["plugin_name"]
-is_plugin_awesome = parsed_result["awesome"]
+plugin_name = parsed_result["plugin_name"][0]
+is_plugin_awesome = parsed_result["awesome"][0]
 ```
 
 Additionally, in case you're making a Liquid Tag, you may want to give the context variable to the parser with the method `set_context`, with that, the parser can say on what file was it parsing on when it throws an error.
@@ -282,7 +295,7 @@ You're able to use the parser for other things. It's only targeted at Jekyll bec
 0. Open an Issue. (optional)
 1. Fork the repo.
 2. Make your cool changes.
-3. Run the tests with `rake`, install the gem if you don't have it (and make new ones if needed)
+3. Run the tests with `rake` (and make new ones if needed)
 4. Open a PR, and done!
 
 ## License
