@@ -22,7 +22,7 @@ input = "'20 ways to fry an egg' 1998"
 # {"cooking_book" => ["20 ways to fry an egg"], "year" => [1998]}
 
 input = "cooking_book: 'How I survived 2 years with only a microwave' year: 2008"
-# {"cooking_book" => ["20 ways to fry an egg"], "year" => [2008]}
+# {"cooking_book" => ["How I survived 2 years with only a microwave"], "year" => [2008]}
 ```
 
 ```ruby
