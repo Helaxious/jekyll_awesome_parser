@@ -292,7 +292,7 @@ You're able to use the parser for other things. It's only targeted at Jekyll bec
 
 ## Acknowledgements
 
-I would like to thank [naitoh](https://github.com/naitoh) and other contributors for developing the [py2rb](https://github.com/naitoh/py2rb) tool, which I used to convert my initial python implementation to ruby, and also wanted to thank [nanobowers](https://github.com/nanobowers) for creating a [fork](https://github.com/nanobowers/py2rb) that supported more later python versions.
+I would like to thank [naitoh](https://github.com/naitoh) and other contributors for developing the [py2rb](https://github.com/naitoh/py2rb) tool, which I used to convert my initial python implementation to ruby, and also wanted to thank [nanobowers](https://github.com/nanobowers) for creating a [fork](https://github.com/nanobowers/py2rb) of py2rb that supported more later python versions.
 
 ## Contributing
 
